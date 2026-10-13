@@ -54,3 +54,13 @@ test('les liens « petragest.com » de l\'espace pointent vers la vitrine locale
   const acces = await fetch(espace + '/api/acces', { method: 'POST', headers: { origin: espace, 'content-type': 'application/json' }, body: JSON.stringify({ code: 'PETRAGEST26X' }) });
   assert.equal(acces.status, 200);
 });
+
+test('déploiement de démonstration : VITRINE_URL remplace les liens « petragest.com », sinon rien', () => {
+  const { remplacerLiens, vitrineValide } = require('../scripts/liens-vitrine.js');
+  const v = vitrineValide('https://petragest-vitrine.vercel.app/');
+  assert.equal(v, 'https://petragest-vitrine.vercel.app');
+  assert.equal(remplacerLiens('<a href="https://petragest.com">Site</a> direction@petragest.com', v),
+    '<a href="https://petragest-vitrine.vercel.app">Site</a> direction@petragest.com');
+  assert.equal(vitrineValide('javascript:alert(1)'), null);
+  assert.equal(vitrineValide('http://exemple.fr'), null);
+});
