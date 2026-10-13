@@ -18,6 +18,31 @@ const { ouvrir } = require('./local/connexion');
   if (!process.env.BLOB_READ_WRITE_TOKEN && !process.env.BLOB_STORE_ID) {
     throw new Error('Stockage Blob introuvable dans le fichier --env : reliez Vercel Blob au projet puis refaites « vercel env pull ».');
   }
+  // Hors de Vercel, Blob refuse le jeton OIDC, que la librairie préfère pourtant (elle va même le chercher
+  // via la connexion de la CLI). On passe donc le jeton de lecture-écriture explicitement, par le même
+  // point d'entrée que le stockage local de la maquette.
+  const jeton = process.env.BLOB_READ_WRITE_TOKEN;
+  if (jeton) {
+    const blob = require('@vercel/blob');
+    globalThis.__PETRA_STOCKAGE_LOCAL__ = {
+      async deposer(chemin, octets, type) {
+        const r = await blob.put(chemin, octets, {
+          access: 'public', addRandomSuffix: true, contentType: type, cacheControlMaxAge: 31536000, token: jeton,
+        });
+        return r.url;
+      },
+      async lister(prefixe) {
+        const r = await blob.list({ prefix: prefixe, limit: 1, token: jeton });
+        return r.blobs;
+      },
+    };
+  }
+  // Vérifier l'accès au stockage AVANT d'écrire quoi que ce soit en base (sinon chargement à moitié fait).
+  try {
+    await require('../api/_lib/stockage').lister('biens/');
+  } catch (e) {
+    throw new Error(`Stockage Blob inaccessible depuis ce poste (${e.message}). Ajoutez BLOB_READ_WRITE_TOKEN (page du magasin Blob sur Vercel) dans le fichier --env.`);
+  }
   const { migrer } = require('../api/_lib/migrations');
   await migrer(console.log);
   const sec = require('../api/_lib/securite');
