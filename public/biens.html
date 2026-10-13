@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Nos biens à la vente | Espace transaction Petra Gest</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#00113C">
+<link rel="icon" href="/assets/pg-embleme-navy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,300;6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/petra.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/biens" aria-label="Espace transaction Petra Gest, tous les biens">
+      <img src="/assets/pg-logo-sable.png" alt="Petra Gest" width="900" height="909">
+      <span class="brand__label">Espace transaction</span>
+    </a>
+    <div class="header-actions">
+      <div class="header-user" id="enteteUtilisateur" hidden>
+        <strong id="enteteNom"></strong>
+        <small id="enteteValidite"></small>
+      </div>
+      <button class="btn btn--white btn--sm" type="button" id="deconnexion">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+        Se déconnecter
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <p class="eyebrow on-dark"><span class="flute on-dark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span> Sélection confidentielle</p>
+      <h1 id="titreAccueil">Nos biens <em>à la vente.</em></h1>
+      <p>Demeures, hôtels particuliers et biens de caractère que Petra Gest vous présente en exclusivité.
+        Cette sélection vous est réservée : merci de ne pas la diffuser.</p>
+    </div>
+  </section>
+
+  <section class="filtres" aria-label="Filtrer les biens" id="filtres" hidden>
+    <div class="wrap">
+      <div class="chips" id="filtreTypes" role="group" aria-label="Type de bien"></div>
+      <div class="filtres__selects">
+        <label class="sr-only" for="filtreVille">Commune</label>
+        <select class="select" id="filtreVille"></select>
+        <label class="sr-only" for="filtreBudget">Budget maximum</label>
+        <select class="select" id="filtreBudget">
+          <option value="">Tous budgets</option>
+          <option value="300000">Jusqu'à 300 000 €</option>
+          <option value="500000">Jusqu'à 500 000 €</option>
+          <option value="800000">Jusqu'à 800 000 €</option>
+          <option value="1200000">Jusqu'à 1 200 000 €</option>
+          <option value="2000000">Jusqu'à 2 000 000 €</option>
+        </select>
+        <label class="sr-only" for="filtreSurface">Surface minimale</label>
+        <select class="select" id="filtreSurface">
+          <option value="">Toutes surfaces</option>
+          <option value="80">80 m² et plus</option>
+          <option value="120">120 m² et plus</option>
+          <option value="200">200 m² et plus</option>
+          <option value="300">300 m² et plus</option>
+        </select>
+        <label class="sr-only" for="filtreTri">Trier</label>
+        <select class="select" id="filtreTri">
+          <option value="selection">Notre sélection</option>
+          <option value="recent">Les plus récents</option>
+          <option value="prix_asc">Prix croissant</option>
+          <option value="prix_desc">Prix décroissant</option>
+          <option value="surface">Surface</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <section class="resultats">
+    <div class="wrap">
+      <div class="resultats__entete">
+        <p class="resultats__compte" id="compte" aria-live="polite"></p>
+      </div>
+      <div class="grille" id="grille" aria-busy="true"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img src="/assets/pg-logo-sable.png" alt="Petra Gest" width="900" height="909">
+        <p>Spécialiste du patrimoine immobilier d'exception.</p>
+      </div>
+      <div>
+        <h4>Espace transaction</h4>
+        <ul>
+          <li><a href="/biens">Tous les biens</a></li>
+          <li><a href="/honoraires">Barème des honoraires</a></li>
+          <li><a href="https://petragest.com">Site Petra Gest</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact transaction</h4>
+        <ul>
+          <li>Catherine Badet</li>
+          <li><a href="tel:+33672481319">06 72 48 13 19</a></li>
+          <li><a href="mailto:catherine.badet@arsenalroyal.com">catherine.badet@arsenalroyal.com</a></li>
+          <li>10 rue Bazeilles, 17300 Rochefort</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© <span id="annee">2026</span> Petra Gest SAS. Tous droits réservés.</span>
+      <span><a href="/mentions-legales">Mentions légales</a> · <a href="/confidentialite">Confidentialité</a> · <a href="/honoraires">Honoraires</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/js/referentiel.js"></script>
+<script src="/assets/js/commun.js"></script>
+<script src="/assets/js/visiteur.js"></script>
+<script src="/assets/js/biens.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Espace transaction | Petra Gest</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Espace réservé de Petra Gest : consultez les biens proposés à la vente avec votre code d'accès personnel.">
+<meta name="theme-color" content="#00113C">
+<link rel="icon" href="/assets/pg-embleme-navy.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz,wght@6..12,300;6..12,400;6..12,600;6..12,700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/petra.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="https://petragest.com" aria-label="Petra Gest, retour au site">
+      <img src="/assets/pg-logo-sable.png" alt="Petra Gest" width="900" height="909">
+      <span class="brand__label">Espace transaction</span>
+    </a>
+    <div class="header-actions">
+      <a class="btn btn--white btn--sm" href="https://petragest.com">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M11 6l-6 6 6 6"/></svg>
+        Retour au site
+      </a>
+    </div>
+  </div>
+</header>
+
+<main class="entree">
+  <div class="wrap">
+    <div class="entree__inner">
+      <p class="eyebrow on-dark"><span class="flute on-dark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span> Espace transaction <span class="flute on-dark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></p>
+      <h1>Des biens d'exception, <em>en toute discrétion.</em></h1>
+      <p class="entree__lede">Cet espace réservé présente les biens que Petra Gest propose à la vente.
+        Saisissez le code personnel qui vous a été remis pour les découvrir.</p>
+
+      <form class="code-form" id="formCode" novalidate>
+        <label for="code">Votre code d'accès</label>
+        <input class="code-input" id="code" name="code" type="text" autocomplete="off" autocapitalize="characters"
+               spellcheck="false" placeholder="XXXX-XXXX-XXXX" maxlength="14" required aria-describedby="aideCode">
+        <button class="btn btn--sand" type="submit" id="boutonCode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 20a4.5 4.5 0 1 0 0-9 4.5 4.5 0 0 0 0 9z"/><path d="M11.2 12.3L20 3.5"/><path d="M16.5 7l2.5 2.5"/><path d="M14.5 9l2 2"/></svg>
+          Accéder aux biens
+        </button>
+        <div id="retour" aria-live="polite"></div>
+        <p class="code-form__aide" id="aideCode">Le code figure dans le message que vous a transmis votre interlocutrice Petra Gest. Il comporte 12 caractères.</p>
+      </form>
+
+      <div class="entree__contact">
+        <span>Vous n'avez pas encore de code ?</span>
+        <a class="btn btn--white btn--sm" href="mailto:catherine.badet@arsenalroyal.com?subject=Demande%20d%27acc%C3%A8s%20%C3%A0%20l%27espace%20transaction">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18v12H3z"/><path d="M3 7l9 6 9-6"/></svg>
+          Nous contacter
+        </a>
+      </div>
+      <p class="entree__rgpd">Vos consultations sont enregistrées afin que votre interlocutrice puisse vous accompagner dans votre recherche.
+        Seul un cookie strictement nécessaire est utilisé. <a href="/confidentialite">En savoir plus</a></p>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img src="/assets/pg-logo-sable.png" alt="Petra Gest" width="900" height="909">
+        <p>Spécialiste du patrimoine immobilier d'exception.</p>
+      </div>
+      <div>
+        <h4>Espace transaction</h4>
+        <ul>
+          <li><a href="/">Accès aux biens</a></li>
+          <li><a href="/honoraires">Barème des honoraires</a></li>
+          <li><a href="https://petragest.com">Site Petra Gest</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact transaction</h4>
+        <ul>
+          <li>Catherine Badet</li>
+          <li><a href="tel:+33672481319">06 72 48 13 19</a></li>
+          <li><a href="mailto:catherine.badet@arsenalroyal.com">catherine.badet@arsenalroyal.com</a></li>
+          <li>10 rue Bazeilles, 17300 Rochefort</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bar">
+      <span>© <span id="annee">2026</span> Petra Gest SAS. Tous droits réservés.</span>
+      <span><a href="/mentions-legales">Mentions légales</a> · <a href="/confidentialite">Confidentialité</a> · <a href="/honoraires">Honoraires</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="/assets/js/referentiel.js"></script>
+<script src="/assets/js/commun.js"></script>
+<script src="/assets/js/acces.js"></script>
+</body>
+</html>
