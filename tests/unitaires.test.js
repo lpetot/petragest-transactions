@@ -152,3 +152,19 @@ test('export CSV : Excel français (;, BOM) et formules neutralisées', () => {
   assert.ok(csv.includes('"\'=cmd"'));
   assert.ok(csv.includes('"PETR-AGES-T26X"'));
 });
+
+test('import Bâtiment C : données valides pour l\'éditeur, photos présentes, aucun tiret long', () => {
+  const fs = require('node:fs'); const path = require('node:path');
+  const A = require('../api/_lib/annonces');
+  const dossier = path.join(__dirname, '..', 'scripts', 'import', 'batiment-c');
+  const brut = fs.readFileSync(path.join(dossier, 'donnees.json'), 'utf8');
+  assert.equal(/[–—]/.test(brut), false);
+  const lots = JSON.parse(brut);
+  assert.deepEqual(lots.map((l) => l.reference_interne.split(' ')[1]), ['C204', 'C301', 'C307']);
+  for (const { photos, ...champs } of lots) {
+    const { erreurs } = A.valider(champs);
+    assert.equal(Object.keys(erreurs || {}).length, 0, JSON.stringify(erreurs));
+    assert.equal(photos.length, 14);
+    for (const p of photos) for (const s of ['g', 'm']) assert.ok(fs.existsSync(path.join(dossier, 'photos', `${p.nom}-${s}.jpg`)), p.nom);
+  }
+});

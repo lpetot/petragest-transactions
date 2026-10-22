@@ -1,0 +1,390 @@
+[
+  {
+    "type_bien": "appartement",
+    "protection": "aucune",
+    "epoque": "xviie",
+    "etat": "renove",
+    "adresse": "10 Quai aux Vivres",
+    "code_postal": "17300",
+    "ville": "Rochefort",
+    "code_insee": "17299",
+    "quartier": "Port de plaisance",
+    "lat": 45.942539,
+    "lng": -0.957208,
+    "affichage_adresse": "zone",
+    "nb_pieces": 4,
+    "nb_chambres": 3,
+    "nb_parkings": 1,
+    "chauffage_type": "individuel",
+    "copropriete": true,
+    "dpe_statut": "realise",
+    "dpe_classe": "B",
+    "ges_classe": "A",
+    "dpe_annee_prix": 2023,
+    "mention_georisques": true,
+    "titre": "Arsenal Royal · T4 traversant de 97 m²",
+    "etage": 2,
+    "nb_niveaux": 1,
+    "exposition": "traversant",
+    "atouts": [
+      "parquet"
+    ],
+    "chauffage_energie": "electricite",
+    "prix_fai": 483000,
+    "dpe_conso": 102,
+    "ges_emission": 3,
+    "dpe_depenses_min": 960,
+    "dpe_depenses_max": 1340,
+    "dpe_date": "2026-03-23",
+    "description": "Au sein d'un Monument Historique du XVIIe siècle entièrement restauré, la Résidence de l'Arsenal Royal réunit dans son Bâtiment C plusieurs appartements, dont trois de type T4, chacun doté d'un stationnement privatif dans un parking souterrain sécurisé. Parquet, volumes généreux, mobilier de qualité et lumière traversante : la pierre ancienne y rencontre le confort d'une rénovation soignée.\n\nUn vaste T4 traversant, baigné de lumière. Le séjour s'ouvre sur un coin repas convivial ; les trois chambres, dont une habillée d'une élégante tête de lit vert émeraude, offrent calme et raffinement. Cuisine équipée et salle de bains avec baignoire complètent l'ensemble.\n\nVendu meublé, avec son stationnement privatif dans le parking souterrain sécurisé de la Résidence.",
+    "photos": [
+      {
+        "nom": "c204-1",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c204-2",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c204-3",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c204-4",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c204-5",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c204-6",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c204-7",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "arsenal-commun-1-facade-jardins",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : la façade et ses jardins paysagers"
+      },
+      {
+        "nom": "arsenal-commun-2-cour-paysagee",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : la cour intérieure paysagée"
+      },
+      {
+        "nom": "arsenal-commun-3-facade-lanternon",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : la façade restaurée et son lanternon"
+      },
+      {
+        "nom": "arsenal-commun-4-vue-port",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal vue depuis le port de plaisance de Rochefort"
+      },
+      {
+        "nom": "arsenal-commun-5-parking-voute",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : le stationnement sous les voûtes de pierre"
+      },
+      {
+        "nom": "arsenal-commun-6-local-velos",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : le local à vélos sécurisé"
+      },
+      {
+        "nom": "arsenal-commun-7-entree-parking",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : l'accès au parking privatif"
+      }
+    ],
+    "surface_habitable": 96.84,
+    "surface_carrez": 96.84,
+    "reference_interne": "PETRA-IMMO C204 (lot 417)",
+    "note_interne": "Repris le 22/10/2026 de petra-immo.fr (Bâtiment C : textes, photos, surfaces), de la Grille de prix 2026 du Bâtiment C (prix) et du dossier de diagnostics de vente (DPE, chauffage). Prix de la grille : 483 000 € (appartement 461 000 €, mobilier 12 000 €, parking 10 000 €). La grille le nomme « C207 » ; le DPE (lot 417) confirme C204.\n\nAVANT PUBLICATION : 1) honoraires (charge vendeur ou acquéreur, montant) ; 2) copropriété : nombre de lots et charges annuelles ; 3) confirmer que le prix de la grille 2026 est toujours valable ; 4) protection : inscrit ou classé Monument historique (le site Petra Immo dit « Monument Historique », la brochure « site classé ») ; 5) le bien est-il vendu loué ? (la grille indique un loyer annuel de 13 800 € HC, 14 640 € CC, dépôt de garantie 1 150 €)."
+  },
+  {
+    "type_bien": "appartement",
+    "protection": "aucune",
+    "epoque": "xviie",
+    "etat": "renove",
+    "adresse": "10 Quai aux Vivres",
+    "code_postal": "17300",
+    "ville": "Rochefort",
+    "code_insee": "17299",
+    "quartier": "Port de plaisance",
+    "lat": 45.942539,
+    "lng": -0.957208,
+    "affichage_adresse": "zone",
+    "nb_pieces": 4,
+    "nb_chambres": 3,
+    "nb_parkings": 1,
+    "chauffage_type": "individuel",
+    "copropriete": true,
+    "dpe_statut": "realise",
+    "dpe_classe": "B",
+    "ges_classe": "A",
+    "dpe_annee_prix": 2023,
+    "mention_georisques": true,
+    "titre": "Arsenal Royal · T4 duplex avec vue sur le port",
+    "etage": 3,
+    "nb_niveaux": 2,
+    "atouts": [
+      "parquet",
+      "hauteur_plafond",
+      "vue_degagee"
+    ],
+    "chauffage_energie": "pompe_chaleur",
+    "prix_fai": 499000,
+    "dpe_conso": 79,
+    "ges_emission": 2,
+    "dpe_depenses_min": 740,
+    "dpe_depenses_max": 1060,
+    "dpe_date": "2026-03-23",
+    "description": "Au sein d'un Monument Historique du XVIIe siècle entièrement restauré, la Résidence de l'Arsenal Royal réunit dans son Bâtiment C plusieurs appartements, dont trois de type T4, chacun doté d'un stationnement privatif dans un parking souterrain sécurisé. Parquet, volumes généreux, mobilier de qualité et lumière traversante : la pierre ancienne y rencontre le confort d'une rénovation soignée.\n\nUn T4 en duplex à l'élégance rare. Le séjour à belle hauteur se prolonge d'une mezzanine, tandis qu'un œil-de-bœuf offre une vue imprenable sur le port de plaisance. Trois chambres, cuisine équipée et pièces d'eau soignées : le charme du volume ancien, sublimé.\n\nVendu meublé, avec son stationnement privatif dans le parking souterrain sécurisé de la Résidence.",
+    "photos": [
+      {
+        "nom": "c301-1",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c301-2",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c301-3",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c301-4",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c301-5",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c301-6",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c301-7",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "arsenal-commun-1-facade-jardins",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : la façade et ses jardins paysagers"
+      },
+      {
+        "nom": "arsenal-commun-2-cour-paysagee",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : la cour intérieure paysagée"
+      },
+      {
+        "nom": "arsenal-commun-3-facade-lanternon",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : la façade restaurée et son lanternon"
+      },
+      {
+        "nom": "arsenal-commun-4-vue-port",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal vue depuis le port de plaisance de Rochefort"
+      },
+      {
+        "nom": "arsenal-commun-5-parking-voute",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : le stationnement sous les voûtes de pierre"
+      },
+      {
+        "nom": "arsenal-commun-6-local-velos",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : le local à vélos sécurisé"
+      },
+      {
+        "nom": "arsenal-commun-7-entree-parking",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : l'accès au parking privatif"
+      }
+    ],
+    "surface_habitable": 94.17,
+    "surface_carrez": 94.17,
+    "reference_interne": "PETRA-IMMO C301 (lot 444)",
+    "note_interne": "Repris le 22/10/2026 de petra-immo.fr (Bâtiment C : textes, photos, surfaces), de la Grille de prix 2026 du Bâtiment C (prix) et du dossier de diagnostics de vente (DPE, chauffage). Prix de la grille : 499 000 € (appartement 477 000 €, mobilier 12 000 €, parking 10 000 €).\n\nAVANT PUBLICATION : 1) honoraires (charge vendeur ou acquéreur, montant) ; 2) copropriété : nombre de lots et charges annuelles ; 3) confirmer que le prix de la grille 2026 est toujours valable ; 4) protection : inscrit ou classé Monument historique (le site Petra Immo dit « Monument Historique », la brochure « site classé ») ; 5) le bien est-il vendu loué ? (la grille indique un loyer annuel de 13 800 € HC, 14 640 € CC, dépôt de garantie 1 150 €)."
+  },
+  {
+    "type_bien": "appartement",
+    "protection": "aucune",
+    "epoque": "xviie",
+    "etat": "renove",
+    "adresse": "10 Quai aux Vivres",
+    "code_postal": "17300",
+    "ville": "Rochefort",
+    "code_insee": "17299",
+    "quartier": "Port de plaisance",
+    "lat": 45.942539,
+    "lng": -0.957208,
+    "affichage_adresse": "zone",
+    "nb_pieces": 4,
+    "nb_chambres": 3,
+    "nb_parkings": 1,
+    "chauffage_type": "individuel",
+    "copropriete": true,
+    "dpe_statut": "realise",
+    "dpe_classe": "B",
+    "ges_classe": "A",
+    "dpe_annee_prix": 2023,
+    "mention_georisques": true,
+    "titre": "Arsenal Royal · T4 duplex au dernier étage",
+    "etage": 3,
+    "nb_niveaux": 2,
+    "atouts": [
+      "parquet",
+      "vue_degagee"
+    ],
+    "chauffage_energie": "pompe_chaleur",
+    "prix_fai": 499000,
+    "dpe_conso": 80,
+    "ges_emission": 2,
+    "dpe_depenses_min": 770,
+    "dpe_depenses_max": 1100,
+    "dpe_date": "2026-03-27",
+    "description": "Au sein d'un Monument Historique du XVIIe siècle entièrement restauré, la Résidence de l'Arsenal Royal réunit dans son Bâtiment C plusieurs appartements, dont trois de type T4, chacun doté d'un stationnement privatif dans un parking souterrain sécurisé. Parquet, volumes généreux, mobilier de qualité et lumière traversante : la pierre ancienne y rencontre le confort d'une rénovation soignée.\n\nLe plus spacieux des trois. Ce T4 en duplex du dernier étage déploie un grand séjour très lumineux, ouvert sur une cuisine équipée, et un œil-de-bœuf tourné vers les mâts du port. Trois chambres et deux pièces d'eau, pour un art de vivre au sommet de la Résidence.\n\nVendu meublé, avec son stationnement privatif dans le parking souterrain sécurisé de la Résidence.",
+    "photos": [
+      {
+        "nom": "c307-1",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c307-2",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c307-3",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c307-4",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c307-5",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c307-6",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "c307-7",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": null
+      },
+      {
+        "nom": "arsenal-commun-1-facade-jardins",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : la façade et ses jardins paysagers"
+      },
+      {
+        "nom": "arsenal-commun-2-cour-paysagee",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : la cour intérieure paysagée"
+      },
+      {
+        "nom": "arsenal-commun-3-facade-lanternon",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : la façade restaurée et son lanternon"
+      },
+      {
+        "nom": "arsenal-commun-4-vue-port",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal vue depuis le port de plaisance de Rochefort"
+      },
+      {
+        "nom": "arsenal-commun-5-parking-voute",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : le stationnement sous les voûtes de pierre"
+      },
+      {
+        "nom": "arsenal-commun-6-local-velos",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : le local à vélos sécurisé"
+      },
+      {
+        "nom": "arsenal-commun-7-entree-parking",
+        "largeur": 1000,
+        "hauteur": 1500,
+        "legende": "Résidence de l'Arsenal Royal : l'accès au parking privatif"
+      }
+    ],
+    "surface_habitable": 98.74,
+    "surface_carrez": 98.74,
+    "reference_interne": "PETRA-IMMO C307 (lot 442)",
+    "note_interne": "Repris le 22/10/2026 de petra-immo.fr (Bâtiment C : textes, photos, surfaces), de la Grille de prix 2026 du Bâtiment C (prix) et du dossier de diagnostics de vente (DPE, chauffage). Prix de la grille : 499 000 € (appartement 477 000 €, mobilier 12 000 €, parking 10 000 €).\n\nAVANT PUBLICATION : 1) honoraires (charge vendeur ou acquéreur, montant) ; 2) copropriété : nombre de lots et charges annuelles ; 3) confirmer que le prix de la grille 2026 est toujours valable ; 4) protection : inscrit ou classé Monument historique (le site Petra Immo dit « Monument Historique », la brochure « site classé ») ; 5) le bien est-il vendu loué ? (la grille indique un loyer annuel de 13 800 € HC, 14 640 € CC, dépôt de garantie 1 150 €)."
+  }
+]
