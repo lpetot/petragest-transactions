@@ -216,8 +216,11 @@
         enfants.push(h('p', { class: 'prix-carte__detail' },
           'Honoraires inclus : ' + P.nombre(b.prix.pourcentage) + ' % TTC à la charge de l\'acquéreur, soit un prix de '
           + P.prix(b.prix.net) + ' hors honoraires.'));
-      } else {
+      } else if (b.prix.charge === 'vendeur') {
         enfants.push(h('p', { class: 'prix-carte__detail' }, 'Honoraires à la charge du vendeur.'));
+      } else {
+        // Seulement en aperçu d'un brouillon : la publication exige la charge des honoraires.
+        enfants.push(h('p', { class: 'prix-carte__detail' }, 'Honoraires à renseigner avant publication.'));
       }
     } else {
       enfants.push(h('p', { class: 'prix-carte__montant' }, 'Prix sur demande'));
@@ -233,7 +236,7 @@
   // Rappel du prix sous le titre, sur petit écran (la colonne prix passe tout en bas).
   function prixMobile(b) {
     var montant = b.statut === 'vendue' ? 'Vendu' : b.prix ? P.prix(b.prix.fai) : 'Prix sur demande';
-    var detail = b.statut === 'vendue' ? '' : b.prix && b.prix.charge === 'acquereur' ? 'Honoraires inclus' : b.prix ? 'Honoraires à la charge du vendeur' : '';
+    var detail = b.statut === 'vendue' ? '' : b.prix && b.prix.charge === 'acquereur' ? 'Honoraires inclus' : b.prix && b.prix.charge === 'vendeur' ? 'Honoraires à la charge du vendeur' : '';
     return h('div', { class: 'fiche__prix-mobile' }, h('div', null, h('strong', null, montant), detail ? h('small', null, detail) : null),
       h('a', { class: 'btn btn--sand btn--sm', href: '#contact' }, P.icone('tel'), 'Contacter'));
   }

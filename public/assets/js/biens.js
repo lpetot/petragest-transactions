@@ -40,8 +40,8 @@
     if (!b.prix) return h('p', { class: 'card__prix' }, 'Prix sur demande');
     var detail = b.prix.charge === 'acquereur'
       ? (b.prix.pourcentage ? 'Honoraires inclus : ' + P.nombre(b.prix.pourcentage) + ' % TTC à la charge de l’acquéreur' : 'Honoraires inclus')
-      : 'Honoraires à la charge du vendeur';
-    return h('p', { class: 'card__prix' }, P.prix(b.prix.fai), h('small', null, detail));
+      : b.prix.charge === 'vendeur' ? 'Honoraires à la charge du vendeur' : '';
+    return h('p', { class: 'card__prix' }, P.prix(b.prix.fai), detail ? h('small', null, detail) : null);
   }
 
   function carte(b) {
@@ -162,6 +162,11 @@
   squelettes(6);
   Promise.all([P.visiteur.chargerSession(), P.api('/api/biens')]).then(function (res) {
     var etat = res[0];
+    // Accès libre (sans code) : la sélection n'est plus « réservée », on ne le prétend pas.
+    if (etat.libre && etat.civilite === undefined) {
+      document.getElementById('accrocheType').textContent = 'Sélection Petra Gest';
+      document.getElementById('accrocheReserve').hidden = true;
+    }
     if (etat.connecte && etat.civilite !== undefined) {
       var nom = P.civilite(etat.civilite, etat.nom);
       document.getElementById('titreAccueil').textContent = '';
