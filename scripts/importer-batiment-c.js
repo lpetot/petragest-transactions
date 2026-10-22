@@ -8,9 +8,10 @@
 //   node scripts/importer-batiment-c.js --env .env.production.local       base en ligne (Neon + Blob)
 //   ajouter --essai pour seulement contrôler les données, sans rien écrire.
 //
-// Rejouable : une annonce dont la référence interne existe déjà (hors corbeille) n'est pas recréée.
-// Les annonces restent en brouillon : il manque des mentions obligatoires (honoraires, copropriété),
-// listées dans leur note interne. L'espace de gestion refusera de les publier tant qu'elles manquent.
+// Rejouable : une annonce déjà présente (même référence interne, hors corbeille) n'est pas recréée ; si elle est encore
+// en brouillon, ses champs sont remis à jour depuis donnees.json (photos inchangées) ; publiée, elle n'est pas touchée.
+// Les annonces restent en brouillon : la publication se fait depuis l'espace de gestion, après les confirmations
+// listées dans leur note interne (mandat et prix par Jessica, charges par Carla).
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -65,10 +66,26 @@ function brancherBlob() {
     if (!admin) throw new Error('Aucun compte administrateur dans cette base.');
 
     for (const { lot, valeurs, photos } of prets) {
-      const deja = await db.une('select pub_id from annonces where reference_interne = $1 and supprime_le is null', [lot.reference_interne]);
-      if (deja) { console.log(`${lot.reference_interne} : déjà présente (${deja.pub_id}), ignorée.`); continue; }
-
       const colonnes = Object.keys(valeurs);
+      const deja = await db.une('select id, pub_id, statut from annonces where reference_interne = $1 and supprime_le is null', [lot.reference_interne]);
+      if (deja && deja.statut !== 'brouillon') {
+        console.log(`${lot.reference_interne} : déjà ${deja.statut} (${deja.pub_id}), laissée telle quelle (modifier depuis l'espace de gestion).`);
+        continue;
+      }
+      if (deja) {
+        // Brouillon existant : les champs sont remis à jour depuis donnees.json, les photos ne bougent pas.
+        const sets = colonnes.map((c, i) => `${c} = ${c === 'atouts' ? `$${i + 1}::jsonb` : `$${i + 1}`}`);
+        const vals = colonnes.map((c) => (c === 'atouts' ? JSON.stringify(valeurs[c]) : valeurs[c]));
+        const pos = A.positionDecalee(valeurs.lat, valeurs.lng);
+        const n = colonnes.length;
+        await db.requete(
+          `update annonces set ${sets.join(', ')}, lat_pub = $${n + 1}, lng_pub = $${n + 2}, modifie_par = $${n + 3}, modifie_le = now()
+            where id = $${n + 4}`,
+          vals.concat([pos.lat, pos.lng, admin.id, deja.id]));
+        console.log(`${lot.reference_interne} : brouillon mis à jour (${deja.pub_id}).`);
+        continue;
+      }
+
       const params = colonnes.map((c) => (c === 'atouts' ? JSON.stringify(valeurs[c]) : valeurs[c]));
       const marques = colonnes.map((c, i) => (c === 'atouts' ? `$${i + 1}::jsonb` : `$${i + 1}`));
       const n = colonnes.length;

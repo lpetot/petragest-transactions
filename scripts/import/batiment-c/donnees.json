@@ -1,7 +1,7 @@
 [
   {
     "type_bien": "appartement",
-    "protection": "aucune",
+    "protection": "inscrit_mh",
     "epoque": "xviie",
     "etat": "renove",
     "adresse": "10 Quai aux Vivres",
@@ -30,7 +30,7 @@
       "parquet"
     ],
     "chauffage_energie": "electricite",
-    "prix_fai": 483000,
+    "prix_fai": 511980,
     "dpe_conso": 102,
     "ges_emission": 3,
     "dpe_depenses_min": 960,
@@ -126,11 +126,15 @@
     "surface_habitable": 96.84,
     "surface_carrez": 96.84,
     "reference_interne": "PETRA-IMMO C204 (lot 417)",
-    "note_interne": "Repris le 22/10/2026 de petra-immo.fr (Bâtiment C : textes, photos, surfaces), de la Grille de prix 2026 du Bâtiment C (prix) et du dossier de diagnostics de vente (DPE, chauffage). Prix de la grille : 483 000 € (appartement 461 000 €, mobilier 12 000 €, parking 10 000 €). La grille le nomme « C207 » ; le DPE (lot 417) confirme C204.\n\nAVANT PUBLICATION : 1) honoraires (charge vendeur ou acquéreur, montant) ; 2) copropriété : nombre de lots et charges annuelles ; 3) confirmer que le prix de la grille 2026 est toujours valable ; 4) protection : inscrit ou classé Monument historique (le site Petra Immo dit « Monument Historique », la brochure « site classé ») ; 5) le bien est-il vendu loué ? (la grille indique un loyer annuel de 13 800 € HC, 14 640 € CC, dépôt de garantie 1 150 €)."
+    "note_interne": "Sources : petra-immo.fr (textes, photos, surfaces), grille de prix du 03/04/2026, diagnostics de vente (DPE), réponses de Catherine Badet du 22/10/2026 (honoraires, copropriété, protection, location).\nPrix net vendeur 483 000 € (mobilier 12 000 € et parking 10 000 € compris) + honoraires 6 % TTC à la charge de l'acquéreur (28 980 €), barème Petra Gest. Vendeur : SAS Magasin aux Vivres.\nCopropriété : 482 lots (238 appartements, 235 parkings, 9 commerces ou réserves). Charges annuelles estimées 2 672,92 € (appel du 1er trimestre 2026 x 4, parking compris, dont fonds travaux 127,28 €).\nInscrit MH (totalité des bâtiments et sol, arrêté du 28/03/2007, Mérimée PA17000078). Vendu libre de bail longue durée : les 13 800 € HC/an de la grille sont un loyer de référence. La grille nomme ce lot « C207 » : coquille, c'est bien C204 (lot 417).\nAVANT PUBLICATION : 1) Jessica confirme le prix et le mandat (aucun mandat signé à ce jour) ; 2) Carla confirme les charges (le chiffre exact viendra du budget voté).",
+    "honoraires_charge": "acquereur",
+    "honoraires_ttc": 28980,
+    "copro_nb_lots": 482,
+    "copro_charges_annuelles": 2673
   },
   {
     "type_bien": "appartement",
-    "protection": "aucune",
+    "protection": "inscrit_mh",
     "epoque": "xviie",
     "etat": "renove",
     "adresse": "10 Quai aux Vivres",
@@ -160,7 +164,7 @@
       "vue_degagee"
     ],
     "chauffage_energie": "pompe_chaleur",
-    "prix_fai": 499000,
+    "prix_fai": 528940,
     "dpe_conso": 79,
     "ges_emission": 2,
     "dpe_depenses_min": 740,
@@ -256,11 +260,15 @@
     "surface_habitable": 94.17,
     "surface_carrez": 94.17,
     "reference_interne": "PETRA-IMMO C301 (lot 444)",
-    "note_interne": "Repris le 22/10/2026 de petra-immo.fr (Bâtiment C : textes, photos, surfaces), de la Grille de prix 2026 du Bâtiment C (prix) et du dossier de diagnostics de vente (DPE, chauffage). Prix de la grille : 499 000 € (appartement 477 000 €, mobilier 12 000 €, parking 10 000 €).\n\nAVANT PUBLICATION : 1) honoraires (charge vendeur ou acquéreur, montant) ; 2) copropriété : nombre de lots et charges annuelles ; 3) confirmer que le prix de la grille 2026 est toujours valable ; 4) protection : inscrit ou classé Monument historique (le site Petra Immo dit « Monument Historique », la brochure « site classé ») ; 5) le bien est-il vendu loué ? (la grille indique un loyer annuel de 13 800 € HC, 14 640 € CC, dépôt de garantie 1 150 €)."
+    "note_interne": "Sources : petra-immo.fr (textes, photos, surfaces), grille de prix du 03/04/2026, diagnostics de vente (DPE), réponses de Catherine Badet du 22/10/2026 (honoraires, copropriété, protection, location).\nPrix net vendeur 499 000 € (mobilier 12 000 € et parking 10 000 € compris) + honoraires 6 % TTC à la charge de l'acquéreur (29 940 €), barème Petra Gest. Vendeur : SAS Magasin aux Vivres.\nCopropriété : 482 lots (238 appartements, 235 parkings, 9 commerces ou réserves). Charges annuelles estimées 2 712,52 € (appel du 1er trimestre 2026 x 4, parking compris, dont fonds travaux 129,16 €).\nInscrit MH (totalité des bâtiments et sol, arrêté du 28/03/2007, Mérimée PA17000078). Vendu libre de bail longue durée : les 13 800 € HC/an de la grille sont un loyer de référence.\nAVANT PUBLICATION : 1) Jessica confirme le prix et le mandat (aucun mandat signé à ce jour) ; 2) Carla confirme les charges (le chiffre exact viendra du budget voté).",
+    "honoraires_charge": "acquereur",
+    "honoraires_ttc": 29940,
+    "copro_nb_lots": 482,
+    "copro_charges_annuelles": 2713
   },
   {
     "type_bien": "appartement",
-    "protection": "aucune",
+    "protection": "inscrit_mh",
     "epoque": "xviie",
     "etat": "renove",
     "adresse": "10 Quai aux Vivres",
@@ -289,7 +297,7 @@
       "vue_degagee"
     ],
     "chauffage_energie": "pompe_chaleur",
-    "prix_fai": 499000,
+    "prix_fai": 528940,
     "dpe_conso": 80,
     "ges_emission": 2,
     "dpe_depenses_min": 770,
@@ -385,6 +393,10 @@
     "surface_habitable": 98.74,
     "surface_carrez": 98.74,
     "reference_interne": "PETRA-IMMO C307 (lot 442)",
-    "note_interne": "Repris le 22/10/2026 de petra-immo.fr (Bâtiment C : textes, photos, surfaces), de la Grille de prix 2026 du Bâtiment C (prix) et du dossier de diagnostics de vente (DPE, chauffage). Prix de la grille : 499 000 € (appartement 477 000 €, mobilier 12 000 €, parking 10 000 €).\n\nAVANT PUBLICATION : 1) honoraires (charge vendeur ou acquéreur, montant) ; 2) copropriété : nombre de lots et charges annuelles ; 3) confirmer que le prix de la grille 2026 est toujours valable ; 4) protection : inscrit ou classé Monument historique (le site Petra Immo dit « Monument Historique », la brochure « site classé ») ; 5) le bien est-il vendu loué ? (la grille indique un loyer annuel de 13 800 € HC, 14 640 € CC, dépôt de garantie 1 150 €)."
+    "note_interne": "Sources : petra-immo.fr (textes, photos, surfaces), grille de prix du 03/04/2026, diagnostics de vente (DPE), réponses de Catherine Badet du 22/10/2026 (honoraires, copropriété, protection, location).\nPrix net vendeur 499 000 € (mobilier 12 000 € et parking 10 000 € compris) + honoraires 6 % TTC à la charge de l'acquéreur (29 940 €), barème Petra Gest. Vendeur : SAS Magasin aux Vivres.\nCopropriété : 482 lots (238 appartements, 235 parkings, 9 commerces ou réserves). Charges annuelles estimées 2 669,20 € (appel du 1er trimestre 2026 x 4, parking compris, dont fonds travaux 127,08 €).\nInscrit MH (totalité des bâtiments et sol, arrêté du 28/03/2007, Mérimée PA17000078). Vendu libre de bail longue durée : les 13 800 € HC/an de la grille sont un loyer de référence.\nAVANT PUBLICATION : 1) Jessica confirme le prix et le mandat (aucun mandat signé à ce jour) ; 2) Carla confirme les charges (le chiffre exact viendra du budget voté).",
+    "honoraires_charge": "acquereur",
+    "honoraires_ttc": 29940,
+    "copro_nb_lots": 482,
+    "copro_charges_annuelles": 2669
   }
 ]
