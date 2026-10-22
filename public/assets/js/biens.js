@@ -51,7 +51,8 @@
     if (b.statut === 'vendue') badges.push(h('span', { class: 'badge' }, 'Vendu'));
     if (b.mise_en_avant && b.statut !== 'vendue') badges.push(h('span', { class: 'badge badge--white' }, P.icone('etoile'), 'Sélection'));
     if ((b.protection === 'inscrit_mh' || b.protection === 'classe_mh') && badges.length < 2) {
-      badges.push(h('span', { class: 'badge badge--white' }, b.protection === 'classe_mh' ? 'Classé MH' : 'Inscrit MH'));
+      // En toutes lettres : « Inscrit MH » n'est pas compris du grand public. Le niveau (inscrit ou classé) est précisé sur la fiche.
+      badges.push(h('span', { class: 'badge badge--white' }, 'Monument historique'));
     }
     var media = h('div', { class: 'card__media' });
     if (b.couverture) {
