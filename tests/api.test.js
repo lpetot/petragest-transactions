@@ -322,3 +322,46 @@ test('pages : adresses propres, en-têtes de sécurité, 404', async () => {
     assert.equal(/<style/i.test(html) || /\sstyle="/i.test(html), false, `style en ligne dans ${f}`);
   }
 });
+
+test('accès libre (ACCES_LIBRE=1) : catalogue et fiches sans code, codes toujours acceptés ; coupé, le code redevient obligatoire', async () => {
+  process.env.ACCES_LIBRE = '1';
+  try {
+    const anonyme = session();
+    const etat = (await anonyme.appel('GET', '/api/acces')).json;
+    assert.equal(etat.connecte, true);
+    assert.equal(etat.libre, true);
+    assert.equal(etat.nom, undefined, 'aucun profil nominatif sans code');
+    const r = await anonyme.appel('GET', '/api/biens');
+    assert.equal(r.statut, 200);
+    assert.equal(r.json.biens.length, 6, 'mêmes biens qu\'avec un code ; le brouillon reste exclu');
+    const texte = JSON.stringify(r.json);
+    for (const interdit of ['reference_interne', 'note_interne', '"lat"', 'adresse']) assert.equal(texte.includes(interdit), false, interdit);
+    const fiche = await anonyme.appel('GET', '/api/biens?id=' + r.json.biens[0].id);
+    assert.equal(fiche.statut, 200);
+    assert.equal(fiche.json.bien.apercu, undefined);
+    // Un détenteur de code garde son accès nominatif.
+    const avecCode = session();
+    assert.equal((await avecCode.appel('POST', '/api/acces', { code: 'PETRAGEST26X' })).statut, 200);
+    assert.equal((await avecCode.appel('GET', '/api/acces')).json.nom, 'Jean Dupont');
+  } finally {
+    delete process.env.ACCES_LIBRE;
+  }
+  assert.equal((await session().appel('GET', '/api/biens')).statut, 401);
+  assert.equal((await session().appel('GET', '/api/acces')).json.connecte, false);
+});
+
+test('pages : police servie par le site, plus aucun appel à Google ; barème renvoyé vers le site Petra Gest', async () => {
+  const dossier = path.join(__dirname, '..', 'public');
+  for (const nom of fs.readdirSync(dossier).filter((f) => f.endsWith('.html'))) {
+    const html = fs.readFileSync(path.join(dossier, nom), 'utf8');
+    assert.equal(/fonts\.(googleapis|gstatic)\.com/.test(html), false, nom);
+    assert.equal(html.includes('href="/honoraires"'), false, nom);
+  }
+  const csp = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'vercel.json'), 'utf8')).headers[0].headers
+    .find((x) => x.key === 'Content-Security-Policy').value;
+  assert.match(csp, /font-src 'self'/);
+  assert.equal(/google/.test(csp), false);
+  const bien = fs.readFileSync(path.join(dossier, 'assets', 'js', 'bien.js'), 'utf8');
+  assert.match(bien, /'Consulter nos honoraires'/);
+  assert.match(bien, /https:\/\/petragest\.com\/honoraires\//);
+});

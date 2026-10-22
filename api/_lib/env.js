@@ -17,4 +17,8 @@ function secret(nom) {
 
 const surVercel = () => Boolean(process.env.VERCEL);
 
-module.exports = { lire, secret, surVercel };
+// ACCES_LIBRE=1 : le catalogue et les fiches se consultent sans code (décision de Catherine et Laetitia, 22/10/2026,
+// « pour l'instant »). Les codes déjà remis continuent de fonctionner ; retirer la variable remet le code obligatoire.
+const accesLibre = () => lire('ACCES_LIBRE') === '1';
+
+module.exports = { lire, secret, surVercel, accesLibre };

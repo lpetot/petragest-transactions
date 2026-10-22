@@ -21,6 +21,14 @@ Pour présenter l'espace à la direction sur son adresse Vercel (`<projet>.verce
 4. Après validation, **avant la vraie mise en ligne** : supprimer cette base de démonstration et en créer une neuve
    (Neon et Blob), retirer `PETRA_DEMO`, puis suivre la procédure complète ci-dessous.
 
+## Accès sans code (`ACCES_LIBRE`)
+
+Depuis le 22/10/2026 (décision de Catherine et Laetitia, « pour l'instant ») : variable `ACCES_LIBRE` = `1` sur le
+projet Vercel. Le catalogue et les fiches se consultent alors sans code ; les codes déjà remis marchent toujours
+(accueil nominatif). Pour remettre le code obligatoire : supprimer la variable puis redéployer. Le barème des honoraires
+n'est plus tenu ici : `/honoraires` et les liens « Consulter nos honoraires » mènent à `https://petragest.com/honoraires/`
+(page de Laetitia ; vers la vitrine de démo tant que `VITRINE_URL` est définie).
+
 ## 0. Décisions et accès à réunir avant de commencer
 
 - **Équipe Vercel Pro (20 $ HT par mois)** : l'offre gratuite Hobby interdit l'usage commercial. Qui paie ?

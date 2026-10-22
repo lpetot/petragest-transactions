@@ -19,11 +19,13 @@ function vitrineValide(valeur) {
   return /^https:\/\/[a-z0-9.-]+$/i.test(v) ? v : null;
 }
 
+// Pages HTML de public/ et scripts de public/assets/js (le lien du barème des honoraires est dans bien.js).
 function appliquer(dossier, vitrine) {
   let n = 0;
-  for (const nom of fs.readdirSync(dossier)) {
-    if (!nom.endsWith('.html')) continue;
-    const fichier = path.join(dossier, nom);
+  const fichiers = fs.readdirSync(dossier).filter((f) => f.endsWith('.html')).map((f) => path.join(dossier, f));
+  const js = path.join(dossier, 'assets', 'js');
+  if (fs.existsSync(js)) fichiers.push(...fs.readdirSync(js).filter((f) => f.endsWith('.js')).map((f) => path.join(js, f)));
+  for (const fichier of fichiers) {
     const avant = fs.readFileSync(fichier, 'utf8');
     const apres = remplacerLiens(avant, vitrine);
     if (apres !== avant) { fs.writeFileSync(fichier, apres); n++; }
@@ -43,4 +45,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { remplacerLiens, vitrineValide };
+module.exports = { remplacerLiens, vitrineValide, appliquer };

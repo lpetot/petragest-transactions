@@ -1,6 +1,8 @@
 /* Fiche détaillée d'un bien. Tout le contenu est posé en texte (jamais de HTML construit). */
 (function () {
   'use strict';
+  // Barème publié sur le site Petra Gest (obligation DGCCRF) ; réécrit vers la vitrine de démo par scripts/liens-vitrine.js.
+  var HONORAIRES = 'https://petragest.com/honoraires/';
   var P = window.P;
   var R = window.REFERENTIEL;
   var h = P.h;
@@ -220,6 +222,10 @@
     } else {
       enfants.push(h('p', { class: 'prix-carte__montant' }, 'Prix sur demande'));
     }
+    if (b.statut !== 'vendue') {
+      enfants.push(h('p', { class: 'prix-carte__honoraires' },
+        h('a', { href: HONORAIRES, target: '_blank', rel: 'noopener' }, 'Consulter nos honoraires')));
+    }
     if (b.statut === 'sous_offre') enfants.push(h('p', { class: 'prix-carte__statut' }, h('span', { class: 'badge badge--sand' }, 'Sous offre')));
     return h('div', { class: 'prix-carte' }, enfants);
   }
@@ -271,7 +277,7 @@
       h('div', { class: 'mentions-legales-bien' },
         b.mention_georisques ? h('p', null, 'Les informations sur les risques auxquels ce bien est exposé sont disponibles sur le site Géorisques : ',
           h('a', { href: 'https://www.georisques.gouv.fr', target: '_blank', rel: 'noopener noreferrer' }, 'www.georisques.gouv.fr'), '.') : null,
-        h('p', null, 'Honoraires : consultez notre ', h('a', { href: '/honoraires' }, 'barème des honoraires'), '. Photos non contractuelles.')));
+        h('p', null, 'Honoraires : consultez notre ', h('a', { href: HONORAIRES, target: '_blank', rel: 'noopener' }, 'barème des honoraires'), '. Photos non contractuelles.')));
 
     var aside = h('aside', { class: 'aside' }, prixCarte(b), contactCarte(b));
     P.vider(fiche);

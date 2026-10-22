@@ -8,15 +8,17 @@ const A = require('./_lib/annonces');
 const { empreinteIp } = require('./_lib/securite');
 const h = require('./_lib/http');
 const s = require('./_lib/sessions');
+const { accesLibre } = require('./_lib/env');
 
 const MOTIF_ID = /^[a-z0-9]{10}$/;
 
-// Renvoie { visiteur } ou { admin }, sinon lève 401 avec la raison.
+// Renvoie { visiteur }, { admin } ou { libre } (ACCES_LIBRE=1), sinon lève 401 avec la raison.
 async function exigerLecteur(req) {
   const session = await s.lireVisiteur(req);
   if (session && session.valide) return { visiteur: session.voucher };
   const admin = await s.lireAdmin(req);
   if (admin && !admin.doit_changer_mdp) return { admin };
+  if (accesLibre()) return { libre: true };
   throw new h.ErreurHttp(401, 'session', 'Votre accès a pris fin. Saisissez de nouveau votre code.',
     { corps: { raison: session ? session.raison : 'absent' } });
 }

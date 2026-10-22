@@ -38,7 +38,9 @@
   function lignePrix(b) {
     if (b.statut === 'vendue') return h('p', { class: 'card__prix' }, 'Vendu', h('small', null, 'Nous consulter pour un bien similaire'));
     if (!b.prix) return h('p', { class: 'card__prix' }, 'Prix sur demande');
-    var detail = b.prix.charge === 'acquereur' ? 'Honoraires inclus' : 'Honoraires à la charge du vendeur';
+    var detail = b.prix.charge === 'acquereur'
+      ? (b.prix.pourcentage ? 'Honoraires inclus : ' + P.nombre(b.prix.pourcentage) + ' % TTC à la charge de l’acquéreur' : 'Honoraires inclus')
+      : 'Honoraires à la charge du vendeur';
     return h('p', { class: 'card__prix' }, P.prix(b.prix.fai), h('small', null, detail));
   }
 

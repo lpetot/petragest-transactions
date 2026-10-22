@@ -24,7 +24,10 @@
   function chargerSession() {
     return P.api('/api/acces').then(function (etat) {
       P.bandeauDemo(etat.demo);
-      if (etat.connecte) {
+      if (etat.connecte && etat.libre && etat.nom === undefined) {
+        var deco = document.getElementById('deconnexion');
+        if (deco) deco.hidden = true;
+      } else if (etat.connecte) {
         document.getElementById('enteteNom').textContent = 'Accès de ' + P.civilite(etat.civilite, etat.nom);
         document.getElementById('enteteValidite').textContent = "Valable jusqu'au " + P.date(etat.expire_le, true);
         document.getElementById('enteteUtilisateur').hidden = false;

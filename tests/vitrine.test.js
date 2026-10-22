@@ -64,3 +64,24 @@ test('déploiement de démonstration : VITRINE_URL remplace les liens « petrage
   assert.equal(vitrineValide('javascript:alert(1)'), null);
   assert.equal(vitrineValide('http://exemple.fr'), null);
 });
+
+test('démonstration : le lien du barème (pages et script de la fiche) mène à la page Honoraires de la vitrine', () => {
+  const { appliquer } = require('../scripts/liens-vitrine.js');
+  const dossier = fs.mkdtempSync(path.join(os.tmpdir(), 'liens-'));
+  try {
+    fs.cpSync(path.join(__dirname, '..', 'public'), dossier, { recursive: true });
+    appliquer(dossier, 'https://petragest-vitrine.vercel.app');
+    const bien = fs.readFileSync(path.join(dossier, 'assets', 'js', 'bien.js'), 'utf8');
+    assert.match(bien, /'https:\/\/petragest-vitrine\.vercel\.app\/honoraires\/'/);
+    const catalogue = fs.readFileSync(path.join(dossier, 'biens.html'), 'utf8');
+    assert.match(catalogue, /href="https:\/\/petragest-vitrine\.vercel\.app\/honoraires\/"/);
+  } finally { fs.rmSync(dossier, { recursive: true, force: true }); }
+});
+
+test('scripts du navigateur : syntaxe valide (un script cassé vide la page sans erreur serveur)', () => {
+  const { execFileSync } = require('node:child_process');
+  const dossier = path.join(__dirname, '..', 'public', 'assets', 'js');
+  for (const f of fs.readdirSync(dossier).filter((x) => x.endsWith('.js'))) {
+    execFileSync(process.execPath, ['--check', path.join(dossier, f)], { stdio: 'pipe' });
+  }
+});

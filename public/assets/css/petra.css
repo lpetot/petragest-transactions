@@ -353,6 +353,9 @@ strong{font-weight:700}
 .prix-carte__montant{font-family:var(--ff-display);font-size:clamp(1.9rem,3vw,2.3rem);line-height:1.15}
 .prix-carte__detail{margin-top:.7rem;font-size:.84rem;color:rgba(255,255,255,.72);line-height:1.55}
 .prix-carte__statut{margin-top:1rem}
+.prix-carte__honoraires{margin-top:.55rem;font-size:.84rem}
+.prix-carte__honoraires a{color:var(--sand);text-decoration:underline;text-underline-offset:3px}
+.prix-carte__honoraires a:hover{color:#fff}
 .contact-carte{background:var(--white);border:1px solid var(--navy-line);padding:1.6rem 1.7rem;scroll-margin-top:calc(var(--head-h) + 1rem)}
 .contact-carte__qui{display:flex;align-items:center;gap:1rem;margin-bottom:1.3rem}
 .contact-carte__qui img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--sand)}

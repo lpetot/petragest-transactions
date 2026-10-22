@@ -8,6 +8,7 @@ const { formaterJour } = require('./_lib/dates');
 const { signer } = require('./_lib/securite');
 const h = require('./_lib/http');
 const s = require('./_lib/sessions');
+const { accesLibre } = require('./_lib/env');
 
 const MESSAGES = {
   revoque: "Ce code n'est plus actif. Contactez-nous pour obtenir un nouvel accès.",
@@ -61,13 +62,15 @@ module.exports = h.gerer({
   async GET(req, res) {
     // demo : vrai seulement dans la maquette locale (affiche un bandeau « démonstration »).
     const demo = process.env.PETRA_DEMO === '1';
+    // libre : consultation sans code (connecte vaut alors true même sans session, sans profil nominatif).
+    const libre = accesLibre();
     const session = await s.lireVisiteur(req);
-    if (!session) return h.envoyerJson(res, 200, { connecte: false, demo });
-    if (!session.valide) {
-      h.effacerCookie(req, res, s.COOKIE_VISITEUR);
-      return h.envoyerJson(res, 200, { connecte: false, raison: session.raison, demo });
+    if (session && !session.valide) h.effacerCookie(req, res, s.COOKIE_VISITEUR);
+    if (!session || !session.valide) {
+      if (libre) return h.envoyerJson(res, 200, { connecte: true, libre, demo });
+      return h.envoyerJson(res, 200, session ? { connecte: false, raison: session.raison, demo } : { connecte: false, demo });
     }
-    h.envoyerJson(res, 200, Object.assign({ connecte: true, demo }, profil(session.voucher)));
+    h.envoyerJson(res, 200, Object.assign({ connecte: true, libre, demo }, profil(session.voucher)));
   },
 
   async DELETE(req, res) {
