@@ -254,7 +254,7 @@
         h('div', null, h('strong', null, c.nom), h('span', null, c.role))),
       h('a', { class: 'btn btn--solid', href: 'tel:' + c.telLien, onclick: function () { journaliser('contact_tel'); } }, P.icone('tel'), 'Appeler ' + c.tel),
       h('a', { class: 'btn btn--light', href: 'mailto:' + c.email + '?subject=' + encodeURIComponent(sujet), onclick: function () { journaliser('contact_mail'); } }, P.icone('mail'), 'Écrire un message'),
-      h('p', null, 'Visites sur rendez-vous uniquement. Nous vous répondons sous 48 heures ouvrées.'));
+      h('p', null, 'Visites sur rendez-vous uniquement. Joignable par téléphone 24h/24 et 7j/7.'));
   }
 
   function construireFiche(b) {
