@@ -69,7 +69,7 @@ Astuce : ajouter `#PETR-AGES-T26X` à l'adresse de l'espace des acquéreurs pré
 | `npm run dev` | Lance le site en local (autre port : `npm run dev -- --port 3100`) |
 | `npm run demo` | Idem, et ouvre le navigateur |
 | `npm run reset` | Efface les données locales (arrêter le serveur avant) ; la démo est recréée au lancement suivant |
-| `npm test` | Lance les 25 tests automatiques (règles métier, sécurité, parcours complets, mode démonstration) |
+| `npm test` | Lance les tests automatiques (règles métier, sécurité, parcours complets, mode démonstration) |
 | `npm run admin -- "email" "Prénom Nom"` | Crée un compte de gestion (mot de passe provisoire affiché une fois) |
 | `npm run entretien` | Lance à la main l'entretien hebdomadaire (purges RGPD, corbeille) |
 | `npm run sauvegarder` | Sauvegarde la base dans un fichier local |

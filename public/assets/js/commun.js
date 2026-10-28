@@ -183,6 +183,12 @@
     return t + (nom || '');
   }
   function pluriel(n, un, plusieurs) { return n + ' ' + (n > 1 ? plusieurs : un); }
+  // Poids d'un fichier : « 850 Ko », « 1,2 Mo ».
+  function taille(octets) {
+    if (!(octets > 0)) return '';
+    if (octets < 1024 * 1024) return Math.max(1, Math.round(octets / 1024)) + ' Ko';
+    return nfNombre.format(Math.round(octets / 1024 / 1024 * 10) / 10) + ' Mo';
+  }
 
   // ---------- Notifications ----------
   function toast(texte, type) {
@@ -245,7 +251,7 @@
   window.P = {
     h: h, vider: vider, icone: icone, flute: flute, eyebrow: eyebrow, api: api, ErreurApi: ErreurApi,
     prix: prix, nombre: nombre, surface: surface, hectares: hectares, date: date, dateHeure: dateHeure, ilYa: ilYa,
-    etage: etage, civilite: civilite, pluriel: pluriel, toast: toast, message: message, pastilleDpe: pastilleDpe,
+    etage: etage, civilite: civilite, pluriel: pluriel, taille: taille, toast: toast, message: message, pastilleDpe: pastilleDpe,
     initEntete: initEntete, reveler: reveler, bandeauDemo: bandeauDemo,
   };
 

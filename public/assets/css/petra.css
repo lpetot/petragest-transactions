@@ -293,6 +293,8 @@ strong{font-weight:700}
 .fiche__entete h1{font-family:var(--ff-display);font-weight:400;font-size:clamp(1.8rem,3.4vw,2.5rem);line-height:1.22;color:var(--navy-deep)}
 .fiche__lieu{margin-top:.7rem;display:flex;align-items:center;gap:.5rem;color:var(--slate);font-size:.95rem}
 .fiche__lieu svg{width:16px;height:16px;color:var(--sand-deep)}
+.fiche__ref{margin-top:.35rem;font-size:.84rem;color:var(--slate)}
+.fiche__ref strong{color:var(--navy-deep);font-weight:600}
 .fiche__prix-mobile{display:none}
 .mini-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem;margin-top:2rem}
 .mini-card{background:var(--white);border:1px solid var(--navy-line);padding:1.1rem 1.1rem 1rem;display:flex;flex-direction:column;gap:.5rem}
@@ -333,6 +335,8 @@ strong{font-weight:700}
 .echelle__barre em{font-style:normal;font-weight:600;font-size:.76rem}
 .echelle__valeur{margin-top:.8rem;font-size:.86rem;color:var(--slate)}
 .echelle__valeur strong{color:var(--navy-deep)}
+.dpe-fichier{margin-top:1.1rem}
+.dpe-fichier .btn{max-width:100%;white-space:normal;text-align:left}
 .alerte-energie{margin-top:1rem;padding:.8rem 1rem;background:#FBEFE3;border:1px solid #F0D3B4;color:#6E3B12;font-size:.86rem;font-weight:600}
 
 /* Carte IGN */
@@ -361,6 +365,7 @@ strong{font-weight:700}
 .contact-carte__qui img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--sand)}
 .contact-carte__qui strong{display:block;font-family:var(--ff-display);font-weight:400;font-size:1.15rem;color:var(--navy-deep)}
 .contact-carte__qui span{font-size:.8rem;color:var(--slate)}
+.contact-carte__qui .contact-carte__rsac{display:block;margin-top:.15rem;font-size:.74rem;color:var(--slate)}
 .contact-carte .btn{width:100%}
 .contact-carte .btn + .btn{margin-top:.6rem}
 .contact-carte p{font-size:.8rem;color:var(--slate);margin-top:1rem;line-height:1.5}

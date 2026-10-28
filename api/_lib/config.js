@@ -7,6 +7,11 @@ module.exports = {
   contact: {
     nom: 'Catherine Badet',
     role: 'Transaction immobilière',
+    // Mention légale d'un agent commercial (réunion du 28/10/2026) : sa qualité et son immatriculation au
+    // registre spécial des agents commerciaux (RSAC) s'affichent sous son nom, sur chaque fiche.
+    // ⚠ Numéro à fournir par Catherine : tant qu'il manque, l'accueil de l'espace de gestion le rappelle.
+    qualite: 'Agent commercial',
+    rsac: { greffe: '', numero: '' },   // ex. { greffe: 'La Rochelle', numero: '123 456 789' }
     tel: '06 72 48 13 19',
     telLien: '+33672481319',
     email: 'catherine.badet@arsenalroyal.com',

@@ -18,7 +18,11 @@ remis : l'espace vous demande aussitôt d'en choisir un personnel (12 caractère
    qu'une zone approximative : l'adresse exacte reste confidentielle jusqu'à la visite.
 5. **Description** et **atouts** (cases à cocher).
 6. **DPE** : cliquez sur les lettres énergie et climat, reportez les dépenses annuelles et la date du diagnostic.
-7. **Honoraires et copropriété** : qui paie les honoraires, et si le bien est en copropriété.
+   Avec **Joindre le DPE (PDF)**, ajoutez le diagnostic complet : les acquéreurs pourront le consulter depuis
+   l'annonce (4 Mo au maximum : le DPE seul, pas tout le dossier de diagnostics).
+7. **Mandat, honoraires et copropriété** : le **n° de mandat** (obligatoire : il s'affiche sur l'annonce comme
+   « Référence de l'annonce » ; la référence interne, elle, reste privée), qui paie les honoraires, et si le bien
+   est en copropriété.
 8. En bas : **Mettre en ligne**. S'il manque une mention obligatoire, la liste s'affiche : complétez et recommencez.
 
 Tant que l'annonce est un brouillon, tout est enregistré automatiquement. Une fois en ligne, pensez au bouton

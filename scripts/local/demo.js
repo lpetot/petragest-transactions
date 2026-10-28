@@ -36,7 +36,7 @@ const ANNONCES = [
     prix_fai: 1290000, honoraires_charge: 'acquereur', honoraires_ttc: 60000, copropriete: false,
     dpe_statut: 'realise', dpe_classe: 'D', ges_classe: 'D', dpe_conso: 198, ges_emission: 41,
     dpe_depenses_min: 5900, dpe_depenses_max: 8100, dpe_annee_prix: 2023, dpe_date: '2024-03-12',
-    reference_interne: 'PG-T-2026-014', note_interne: 'Vendeurs disponibles le samedi matin pour les visites.',
+    numero_mandat: '2026-014', reference_interne: 'PG-T-2026-014', note_interne: 'Vendeurs disponibles le samedi matin pour les visites.',
   },
   {
     cle: 'arsenal', photos: ['arsenal-sejour', 'arsenal-vue', 'arsenal-facade'],
@@ -53,7 +53,7 @@ const ANNONCES = [
     prix_fai: 385000, honoraires_charge: 'vendeur', copropriete: true, copro_nb_lots: 48, copro_charges_annuelles: 2400,
     dpe_statut: 'realise', dpe_classe: 'C', ges_classe: 'A', dpe_conso: 142, ges_emission: 4,
     dpe_depenses_min: 1050, dpe_depenses_max: 1480, dpe_annee_prix: 2023, dpe_date: '2025-06-02',
-    reference_interne: 'PG-T-2026-017',
+    numero_mandat: '2026-017', reference_interne: 'PG-T-2026-017',
   },
   {
     cle: 'demeure', photos: ['demeure-facade', 'demeure-parc', 'demeure-salon'],
@@ -70,7 +70,7 @@ const ANNONCES = [
     prix_fai: 745000, honoraires_charge: 'acquereur', honoraires_ttc: 35000, copropriete: false,
     dpe_statut: 'realise', dpe_classe: 'E', ges_classe: 'F', dpe_conso: 285, ges_emission: 78,
     dpe_depenses_min: 7400, dpe_depenses_max: 10100, dpe_annee_prix: 2023, dpe_date: '2024-11-20',
-    reference_interne: 'PG-T-2026-009',
+    numero_mandat: '2026-009', reference_interne: 'PG-T-2026-009',
   },
   {
     cle: 'rochelle', photos: ['rochelle-facade', 'rochelle-sejour', 'rochelle-patio'],
@@ -87,7 +87,7 @@ const ANNONCES = [
     prix_fai: 890000, honoraires_charge: 'vendeur', copropriete: false,
     dpe_statut: 'realise', dpe_classe: 'B', ges_classe: 'B', dpe_conso: 88, ges_emission: 12,
     dpe_depenses_min: 1300, dpe_depenses_max: 1800, dpe_annee_prix: 2023, dpe_date: '2025-02-14',
-    reference_interne: 'PG-T-2026-011',
+    numero_mandat: '2026-011', reference_interne: 'PG-T-2026-011',
   },
   {
     cle: 'logis', photos: ['logis-facade', 'logis-terrain'],
@@ -104,7 +104,7 @@ const ANNONCES = [
     prix_fai: 420000, honoraires_charge: 'acquereur', honoraires_ttc: 25000, copropriete: false,
     dpe_statut: 'realise', dpe_classe: 'F', ges_classe: 'F', dpe_conso: 372, ges_emission: 88,
     dpe_depenses_min: 6900, dpe_depenses_max: 9400, dpe_annee_prix: 2023, dpe_date: '2025-09-01',
-    reference_interne: 'PG-T-2026-021',
+    numero_mandat: '2026-021', reference_interne: 'PG-T-2026-021',
   },
   {
     cle: 'bourgeois', photos: ['bourgeois-salon', 'bourgeois-facade'],
@@ -121,7 +121,7 @@ const ANNONCES = [
     prix_fai: 342000, honoraires_charge: 'vendeur', copropriete: true, copro_nb_lots: 12, copro_charges_annuelles: 1450,
     dpe_statut: 'realise', dpe_classe: 'D', ges_classe: 'E', dpe_conso: 215, ges_emission: 49,
     dpe_depenses_min: 2100, dpe_depenses_max: 2900, dpe_annee_prix: 2023, dpe_date: '2024-05-10',
-    reference_interne: 'PG-T-2025-088',
+    numero_mandat: '2025-088', reference_interne: 'PG-T-2025-088',
   },
   {
     cle: 'chateau', photos: ['chateau-facade'], legendes: [''],

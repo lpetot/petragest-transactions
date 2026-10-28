@@ -283,6 +283,10 @@
     api('activite').then(function (r) {
       var c = r.chiffres;
       P.vider(zone);
+      if (r.avertissements && r.avertissements.length) {
+        zone.appendChild(h('div', { class: 'g-manquants g-accueil__alerte' }, h('strong', null, 'Mentions légales à compléter'),
+          h('ul', null, r.avertissements.map(function (t) { return h('li', null, t); }))));
+      }
       zone.appendChild(h('div', { class: 'g-chiffres' },
         [[c.en_ligne, c.en_ligne > 1 ? 'Annonces en ligne' : 'Annonce en ligne'], [c.codes_actifs, c.codes_actifs > 1 ? "Codes d'accès actifs" : "Code d'accès actif"],
           [c.fiches_30j, 'Consultations (30 jours)'], [c.contacts_30j, 'Demandes de contact (30 jours)']].map(function (x) {
@@ -346,6 +350,7 @@
           var meta = [];
           if (a.type_bien) meta.push(h('span', null, R.libelle(R.typesBien, a.type_bien)));
           if (a.ville) meta.push(h('span', null, P.icone('lieu'), a.ville));
+          if (a.numero_mandat) meta.push(h('span', null, P.icone('feuille'), 'Mandat ' + a.numero_mandat));
           meta.push(h('span', null, P.icone('photo'), P.pluriel(a.nb_photos, 'photo', 'photos')));
           if (a.statut !== 'brouillon') meta.push(h('span', null, P.icone('oeil'), P.pluriel(a.vues_30j, 'vue', 'vues') + ' en 30 jours'));
           meta.push(h('span', null, P.icone('horloge'), 'Modifiée ' + P.ilYa(a.modifie_le)));
@@ -814,10 +819,54 @@
         corpsEnergie.appendChild(h('p', { class: 'g-aide' }, h('strong', null, 'Obligation légale : '),
           'la classe énergie, la classe climat et l\'estimation des dépenses annuelles doivent figurer sur l\'annonce. Les classes F et G affichent automatiquement la mention « Logement à consommation énergétique excessive ».'));
       }
+      if (a.dpe_statut === 'realise' || a.dpe_statut === 'vierge') corpsEnergie.appendChild(zoneDpePdf());
+    }
+
+    // DPE complet joint en PDF : les acquéreurs le consultent depuis l'annonce (demande de Catherine, 28/10/2026).
+    var DPE_MAX = 4 * 1024 * 1024;   // limite d'envoi de l'hébergeur
+    var entreeDpe = h('input', { type: 'file', accept: 'application/pdf,.pdf', class: 'sr-only', tabindex: '-1' });
+    entreeDpe.addEventListener('change', function () { var f = entreeDpe.files[0]; entreeDpe.value = ''; if (f) joindreDpe(f); });
+    var dpeEnvoi = false;
+    function joindreDpe(f) {
+      if (f.type !== 'application/pdf' && !/\.pdf$/i.test(f.name || '')) { P.toast("Ce fichier n'est pas un PDF.", 'erreur'); return; }
+      if (f.size > DPE_MAX) { P.toast('Ce PDF dépasse 4 Mo. Joignez le DPE seul (pas le dossier complet de diagnostics) ou réduisez-le.', 'erreur'); return; }
+      dpeEnvoi = true; dessinerEnergie();
+      api('annonces/' + a.id + '/dpe', { method: 'POST', binaire: f }).then(function (r) {
+        a.dpe_pdf = r.dpe_pdf;
+        P.toast('DPE joint à l\'annonce.');
+      }).catch(signaler).then(function () { dpeEnvoi = false; dessinerEnergie(); });
+    }
+    function retirerDpe() {
+      confirmer('Retirer le DPE joint ?', 'Le PDF ne sera plus proposé aux acquéreurs et sera effacé.', 'Retirer', true).then(function (ok) {
+        if (!ok) return;
+        api('annonces/' + a.id + '/dpe', { method: 'DELETE' }).then(function () {
+          a.dpe_pdf = null; dessinerEnergie(); P.toast('DPE retiré de l\'annonce.');
+        }).catch(signaler);
+      });
+    }
+    function zoneDpePdf() {
+      var contenu;
+      if (dpeEnvoi) {
+        contenu = [h('small', null, 'Envoi du PDF en cours...')];
+      } else if (a.dpe_pdf) {
+        contenu = [
+          h('p', null, h('a', { href: a.dpe_pdf.url, target: '_blank', rel: 'noopener' }, 'Voir le DPE joint (PDF, ' + P.taille(a.dpe_pdf.octets) + ')')),
+          h('div', { class: 'g-dpe-pdf__boutons' },
+            bouton('Remplacer', 'btn--light btn--sm', 'rafraichir', function () { entreeDpe.click(); }),
+            bouton('Retirer', 'btn--light btn--sm', 'corbeille', retirerDpe))];
+      } else {
+        contenu = [
+          h('div', null, bouton('Joindre le DPE (PDF)', 'btn--light btn--sm', 'feuille', function () { entreeDpe.click(); })),
+          h('small', null, 'Les acquéreurs pourront le consulter depuis l\'annonce. 4 Mo au maximum : le DPE seul, pas tout le dossier de diagnostics.')];
+      }
+      return h('div', { class: 'g-champ g-dpe-pdf' }, h('span', { class: 'g-label' }, 'Le DPE complet (PDF)'), contenu, entreeDpe);
     }
     var corpsHonoraires = h('div', { class: 'g-grille' });
+    var champMandat = saisie('numero_mandat', 'N° de mandat', { max: 40, placeholder: 'Ex. 2026-014',
+      aide: 'Affiché aux acquéreurs comme « Référence de l\'annonce ». Obligatoire pour mettre en ligne.' });
     function dessinerHonoraires() {
       P.vider(corpsHonoraires);
+      corpsHonoraires.appendChild(h('div', { class: 'g-grille g-grille--2' }, champMandat));
       corpsHonoraires.appendChild(segments('honoraires_charge', 'Honoraires à la charge de', R.honorairesCharge, { apres: function () { dessinerHonoraires(); majCalcul(); } }));
       if (a.honoraires_charge === 'acquereur') {
         corpsHonoraires.appendChild(h('div', { class: 'g-grille g-grille--2' },
@@ -907,12 +956,16 @@
         zoneManquants.appendChild(m.length
           ? h('div', { class: 'g-manquants' }, h('strong', null, 'Pour mettre en ligne, il reste à renseigner :'), h('ul', null, m.map(function (x) { return h('li', null, capitaliser(x)); })))
           : h('div', { class: 'g-manquants g-manquants--ok' }, h('strong', null, 'L\'annonce est complète.'), 'Vous pouvez la mettre en ligne avec le bouton en bas de page.'));
+      } else if (m.length) {
+        // Annonce en ligne avant une nouvelle obligation (n° de mandat) : on le rappelle sans bloquer.
+        zoneManquants.appendChild(h('div', { class: 'g-manquants' }, h('strong', null, 'Annonce en ligne : il reste à renseigner'),
+          h('ul', null, m.map(function (x) { return h('li', null, capitaliser(x)); }))));
       }
       majSection('essentiel', Boolean(a.type_bien && a.titre && a.prix_fai && (a.surface_habitable || a.surface_terrain)));
       majSection('adresse', Boolean(a.ville));
       majSection('description', Boolean(a.description));
       majSection('energie', Boolean(a.dpe_statut && (a.dpe_statut !== 'realise' || (a.dpe_classe && a.ges_classe))));
-      majSection('honoraires', Boolean(a.honoraires_charge && a.copropriete !== null && a.copropriete !== undefined));
+      majSection('honoraires', Boolean(a.numero_mandat && a.honoraires_charge && a.copropriete !== null && a.copropriete !== undefined));
     }
     function rafraichirManquants() {
       api('annonces/' + a.id).then(function (r) { a.manquants = r.annonce.manquants; majManquants(); }).catch(function () {});
@@ -1015,7 +1068,7 @@
             h('small', null, 'Conseil maison : pas de tiret long, et on dit ce que le bien offre plutôt que ce que les autres n\'offrent pas.'))),
           h('div', { class: 'g-champ' }, h('span', { class: 'g-label' }, 'Atouts (cochez ceux qui s\'appliquent)'), atouts)], 'description'),
         section(5, 'Performance énergétique', 'Informations reprises du diagnostic (DPE).', corpsEnergie, 'energie'),
-        section(6, 'Honoraires et copropriété', 'Mentions obligatoires sur toute annonce de vente.', corpsHonoraires, 'honoraires'),
+        section(6, 'Mandat, honoraires et copropriété', 'Mentions obligatoires sur toute annonce de vente.', corpsHonoraires, 'honoraires'),
         h('section', { class: 'g-section' },
           h('details', { class: 'g-details g-details--section' },
             h('summary', { class: 'g-section__tete' }, h('span', { class: 'g-section__num' }, '7'), h('div', null, h('h2', null, 'Plus de détails'), h('p', null, 'Facultatif : époque, étage, chauffage, notes internes...'))),
@@ -1038,7 +1091,7 @@
               bascule('mise_en_avant', 'Mettre ce bien en avant dans la sélection (badge « Sélection », en tête de liste)'),
               bascule('mention_georisques', 'Afficher la mention Géorisques (obligatoire si un état des risques existe pour ce bien)'),
               h('div', { class: 'g-grille g-grille--2' },
-                saisie('reference_interne', 'Référence interne', { max: 60, aide: 'Jamais visible des acquéreurs.' }),
+                saisie('reference_interne', 'Référence interne', { max: 60, aide: 'Jamais visible des acquéreurs (ils voient le n° de mandat).' }),
                 zone('note_interne', (function () {
                   var t = h('textarea', { class: 'g-textarea', id: nouvelId(), maxlength: '2000', placeholder: 'Disponibilités des vendeurs, points d\'attention...' });
                   t.style.minHeight = '110px';

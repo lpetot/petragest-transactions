@@ -39,7 +39,7 @@ Lire d'abord `README.md`.
 
 ## Vérifier son travail
 
-- `npm test` doit rester à 25/25 (ajouter un test pour toute nouvelle règle).
+- `npm test` doit rester entièrement vert (34 tests au 28/10/2026 ; ajouter un test pour toute nouvelle règle).
 - Vérification visuelle : lancer le serveur local et ouvrir les pages dans le navigateur habituel, en 1440 px et en
   390 px. Aucune page ne doit défiler horizontalement.
 - **Ne jamais lancer Chrome en série avec un profil temporaire neuf** (`--user-data-dir` jetable, captures

@@ -21,6 +21,22 @@ Pour présenter l'espace à la direction sur son adresse Vercel (`<projet>.verce
 4. Après validation, **avant la vraie mise en ligne** : supprimer cette base de démonstration et en créer une neuve
    (Neon et Blob), retirer `PETRA_DEMO`, puis suivre la procédure complète ci-dessous.
 
+## Mettre à jour un espace déjà en ligne
+
+Quand une nouvelle version ajoute un fichier `sql/NNN_*.sql` (c'est le cas de `002_mandat_dpe.sql`, lot 1 du
+28/10/2026 : n° de mandat, DPE en PDF), **la base passe d'abord, le code ensuite** : le nouveau code lit des colonnes
+que l'ancienne base n'a pas (l'espace de gestion tomberait en erreur), alors que l'ancien code ignore sans souci les
+colonnes ajoutées.
+
+```
+vercel env pull .env.production.local --environment=production
+node scripts/migrer.js --env .env.production.local
+npx vercel@latest deploy --prod
+```
+
+Après le lot 1 : les annonces déjà en ligne restent visibles et modifiables sans n° de mandat, mais l'accueil de
+l'espace de gestion le réclame, comme le n° RSAC de l'interlocutrice (à renseigner dans `api/_lib/config.js`, `contact.rsac`).
+
 ## Accès sans code (`ACCES_LIBRE`)
 
 Depuis le 22/10/2026 (décision de Catherine et Laetitia, « pour l'instant ») : variable `ACCES_LIBRE` = `1` sur le

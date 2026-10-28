@@ -8,6 +8,7 @@ const config = require('./_lib/config');
 const A = require('./_lib/annonces');
 const codes = require('./_lib/codes');
 const stockage = require('./_lib/stockage');
+const fichiers = require('./_lib/fichiers');
 const dates = require('./_lib/dates');
 const sec = require('./_lib/securite');
 const h = require('./_lib/http');
@@ -178,6 +179,7 @@ function versAnnonceAdmin(a, photos) {
     photos: photos.map((p) => ({
       id: p.id, url: p.url, url_mini: p.url_mini, largeur: p.largeur, hauteur: p.hauteur, legende: p.legende || '',
     })),
+    dpe_pdf: a.dpe_pdf_url ? { url: a.dpe_pdf_url, octets: a.dpe_pdf_octets } : null,
     manquants: A.manquantsPourPublier(a, photos.length),
     prix_detail: A.prix(a),
   });
@@ -187,7 +189,7 @@ function versAnnonceAdmin(a, photos) {
 async function annoncesListe(req, res) {
   const lignes = await db.requete(
     `select a.pub_id, a.statut, a.titre, a.type_bien, a.ville, a.prix_fai, a.supprime_le, a.modifie_le,
-            a.publie_le, a.vendu_le, a.mise_en_avant, a.reference_interne,
+            a.publie_le, a.vendu_le, a.mise_en_avant, a.reference_interne, a.numero_mandat,
        (select p.url_mini from photos p where p.annonce_id = a.id order by p.position limit 1) as couverture,
        (select count(*)::int from photos p where p.annonce_id = a.id) as nb_photos,
        (select count(*)::int from consultations c
@@ -200,7 +202,7 @@ async function annoncesListe(req, res) {
       id: a.pub_id, statut: a.statut, titre: a.titre, type_bien: a.type_bien, ville: a.ville, prix_fai: a.prix_fai,
       en_corbeille: Boolean(a.supprime_le), supprime_le: iso(a.supprime_le), modifie_le: iso(a.modifie_le),
       publie_le: iso(a.publie_le), vendu_le: iso(a.vendu_le), mise_en_avant: a.mise_en_avant,
-      reference_interne: a.reference_interne, couverture: a.couverture, nb_photos: a.nb_photos,
+      reference_interne: a.reference_interne, numero_mandat: a.numero_mandat, couverture: a.couverture, nb_photos: a.nb_photos,
       vues_30j: a.vues_30j, visiteurs: a.visiteurs,
     })),
   });
@@ -264,7 +266,12 @@ async function annonceModifier(req, res, m, admin) {
 
   const nbPhotos = (await db.une('select count(*)::int as n from photos where annonce_id = $1', [a.id])).n;
   if (A.STATUTS_EN_LIGNE.includes(fusion.statut)) {
-    const manquants = A.manquantsPourPublier(fusion, nbPhotos);
+    let manquants = A.manquantsPourPublier(fusion, nbPhotos);
+    // Annonce mise en ligne avant que le n° de mandat soit exigé : elle reste modifiable sans lui.
+    // On ne peut pas pour autant effacer un n° déjà saisi.
+    if (A.STATUTS_EN_LIGNE.includes(a.statut) && !a.numero_mandat) {
+      manquants = manquants.filter((x) => x !== A.MANQUE_MANDAT);
+    }
     if (manquants.length) {
       throw new E(422, 'incomplet',
         a.statut === fusion.statut
@@ -298,19 +305,12 @@ async function annonceModifier(req, res, m, admin) {
 
 // Supprime des fichiers du stockage seulement s'ils ne sont plus référencés nulle part
 // (protection contre la perte de photos partagées entre deux annonces).
-async function supprimerFichiersOrphelins(urls) {
-  const aSupprimer = [];
-  for (const url of urls) {
-    const r = await db.une('select count(*)::int as n from photos where url = $1 or url_mini = $1', [url]);
-    if (r.n === 0) aSupprimer.push(url);
-  }
-  if (aSupprimer.length) await stockage.supprimer(aSupprimer);
-}
+const supprimerFichiersOrphelins = fichiers.supprimerOrphelins;
 
 async function purgerAnnonce(a) {
   const photos = await photosDe(a.id);
   await db.requete('delete from annonces where id = $1', [a.id]);
-  await supprimerFichiersOrphelins(photos.flatMap((p) => [p.url, p.url_mini]));
+  await supprimerFichiersOrphelins(photos.flatMap((p) => [p.url, p.url_mini]).concat([a.dpe_pdf_url]));
 }
 
 async function annonceSupprimer(req, res, m) {
@@ -331,11 +331,11 @@ async function annonceRestaurer(req, res, m) {
   h.envoyerJson(res, 200, { annonce: versAnnonceAdmin(await trouverAnnonce(m[1]), await photosDe(a.id)) });
 }
 
-// Duplique les champs seulement, jamais les photos : supprimer la copie ne peut pas
-// effacer les photos de l'original.
+// Duplique les champs seulement, jamais les photos ni le DPE joint : supprimer la copie ne peut pas
+// effacer les fichiers de l'original. Le n° de mandat n'est pas recopié : un autre bien a son propre mandat.
 async function annonceDupliquer(req, res, m, admin) {
   const a = await trouverAnnonce(m[1]);
-  const cols = Object.keys(A.CHAMPS).filter((c) => c !== 'titre').concat(['lat_pub', 'lng_pub']);
+  const cols = Object.keys(A.CHAMPS).filter((c) => c !== 'titre' && c !== 'numero_mandat').concat(['lat_pub', 'lng_pub']);
   const copie = await db.une(
     `insert into annonces (pub_id, statut, cree_par, modifie_par, titre, ${cols.join(', ')})
      select $1, 'brouillon', $2, $2, left(titre || ' (copie)', 140), ${cols.join(', ')}
@@ -439,6 +439,49 @@ async function photoSupprimer(req, res, m) {
   await renumeroter(p.annonce_id);
   await db.requete('update annonces set modifie_le = now() where id = $1', [p.annonce_id]);
   await supprimerFichiersOrphelins([p.url, p.url_mini]);
+  h.envoyerVide(res, 204);
+}
+
+// =====================================================================
+// DPE complet joint en PDF
+// =====================================================================
+// Vercel refuse toute requête de plus de 4,5 Mo : on s'arrête à 4 Mo (un DPE seul pèse en général moins de 2 Mo).
+const DPE_MAX_OCTETS = 4 * 1024 * 1024;
+const DPE_TROP_LOURD = 'Ce PDF dépasse 4 Mo. Joignez le DPE seul (pas le dossier complet de diagnostics) ou réduisez-le.';
+const PDF = (b) => b.length > 5 && b.subarray(0, 5).toString('latin1') === '%PDF-';
+
+async function dpeJoindre(req, res, m) {
+  const a = await trouverAnnonce(m[1]);
+  if (a.supprime_le) throw new E(409, 'corbeille', 'Cette annonce est dans la corbeille.');
+  if (!String(req.headers['content-type'] || '').startsWith('application/octet-stream')) {
+    throw new E(415, 'format', 'Envoi du DPE mal formé.');
+  }
+  let corps;
+  try {
+    corps = await h.lireCorps(req, DPE_MAX_OCTETS);
+  } catch (e) {
+    if (e instanceof E && e.statut === 413) throw new E(413, 'trop_gros', DPE_TROP_LOURD);
+    throw e;
+  }
+  if (!PDF(corps)) throw new E(400, 'format', "Ce fichier n'est pas un PDF. Enregistrez le DPE au format PDF puis recommencez.");
+  const url = await stockage.deposer(`biens/${a.pub_id}/dpe-${crypto.randomUUID()}.pdf`, corps, 'application/pdf');
+  try {
+    await db.requete(
+      'update annonces set dpe_pdf_url = $1, dpe_pdf_octets = $2, modifie_le = now() where id = $3',
+      [url, corps.length, a.id]);
+  } catch (e) {
+    await stockage.supprimer([url]).catch(() => {});
+    throw e;
+  }
+  await supprimerFichiersOrphelins([a.dpe_pdf_url]);   // l'ancien DPE, s'il y en avait un
+  h.envoyerJson(res, 201, { dpe_pdf: { url, octets: corps.length } });
+}
+
+async function dpeRetirer(req, res, m) {
+  const a = await trouverAnnonce(m[1]);
+  if (a.supprime_le) throw new E(409, 'corbeille', 'Cette annonce est dans la corbeille.');
+  await db.requete('update annonces set dpe_pdf_url = null, dpe_pdf_octets = null, modifie_le = now() where id = $1', [a.id]);
+  await supprimerFichiersOrphelins([a.dpe_pdf_url]);
   h.envoyerVide(res, 204);
 }
 
@@ -640,7 +683,21 @@ async function activite(req, res) {
       (select count(*)::int from vouchers where anonymise_le is null and revoque_le is null and expire_le > now()) as codes_actifs,
       (select count(*)::int from consultations where evenement = 'connexion' and cree_le > now() - interval '30 days') as connexions_30j,
       (select count(*)::int from consultations where evenement = 'fiche' and cree_le > now() - interval '30 days') as fiches_30j,
-      (select count(*)::int from consultations where evenement in ('contact_tel','contact_mail') and cree_le > now() - interval '30 days') as contacts_30j`);
+      (select count(*)::int from consultations where evenement in ('contact_tel','contact_mail') and cree_le > now() - interval '30 days') as contacts_30j,
+      (select count(*)::int from annonces where supprime_le is null and statut in ('publiee','sous_offre')
+         and coalesce(numero_mandat, '') = '') as en_ligne_sans_mandat`);
+  // Mentions légales encore incomplètes, rappelées sur l'accueil de l'espace de gestion.
+  const avertissements = [];
+  const c = config.contact;
+  if (c.qualite && !(c.rsac && c.rsac.greffe && c.rsac.numero)) {
+    avertissements.push(`Le numéro RSAC de ${c.nom} n'est pas encore renseigné : la loi impose de l'afficher sous son nom `
+      + "sur chaque annonce. Transmettez-le à MJ Data (ville du greffe et numéro d'immatriculation).");
+  }
+  if (chiffres.en_ligne_sans_mandat) {
+    avertissements.push(chiffres.en_ligne_sans_mandat > 1
+      ? `${chiffres.en_ligne_sans_mandat} annonces en ligne n'ont pas encore de numéro de mandat : ouvrez-les et complétez la rubrique « Mandat, honoraires et copropriété ».`
+      : "Une annonce en ligne n'a pas encore de numéro de mandat : ouvrez-la et complétez la rubrique « Mandat, honoraires et copropriété ».");
+  }
   const evenements = await db.requete(
     `select c.evenement, c.cree_le, v.id as code_id, v.civilite, v.beneficiaire_nom, a.pub_id, a.titre
        from consultations c join vouchers v on v.id = c.voucher_id left join annonces a on a.id = c.annonce_id
@@ -648,6 +705,7 @@ async function activite(req, res) {
       order by c.cree_le desc limit 25`);
   h.envoyerJson(res, 200, {
     chiffres,
+    avertissements,
     evenements: evenements.map((e) => ({
       evenement: e.evenement, le: iso(e.cree_le),
       personne: { code_id: e.code_id, civilite: e.civilite, nom: e.beneficiaire_nom },
@@ -678,6 +736,8 @@ const ROUTES = [
   ['POST', new RegExp(`^annonces/${ID}/dupliquer$`), annonceDupliquer],
   ['POST', new RegExp(`^annonces/${ID}/photos$`), photoAjouter],
   ['PUT', new RegExp(`^annonces/${ID}/photos/ordre$`), photosOrdre],
+  ['POST', new RegExp(`^annonces/${ID}/dpe$`), dpeJoindre],
+  ['DELETE', new RegExp(`^annonces/${ID}/dpe$`), dpeRetirer],
   ['PATCH', /^photos\/(\d{1,9})$/, photoModifier],
   ['DELETE', /^photos\/(\d{1,9})$/, photoSupprimer],
   ['GET', /^codes$/, codesListe],

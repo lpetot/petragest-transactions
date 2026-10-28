@@ -60,7 +60,7 @@ const COMPLETE = {
   code_postal: '17300', ville: 'Rochefort', lat: 45.94, lng: -0.96, prix_fai: 500000, honoraires_charge: 'acquereur',
   honoraires_ttc: 25000, surface_habitable: 120, copropriete: false, dpe_statut: 'realise', dpe_classe: 'C', ges_classe: 'B',
   dpe_depenses_min: 1000, dpe_depenses_max: 1400, dpe_annee_prix: 2023, dpe_date: '2025-01-15',
-  reference_interne: 'REF-INTERNE-XYZ', note_interne: 'NOTE-INTERNE-XYZ',
+  numero_mandat: '2026-T01', reference_interne: 'REF-INTERNE-XYZ', note_interne: 'NOTE-INTERNE-XYZ',
 };
 
 test.before(async () => {
@@ -179,6 +179,7 @@ test('annonce : validation, contrôle avant publication, photos, publication, vi
   assert.notEqual(fiche.json.bien.localisation.position.lat, 45.94);
   assert.equal(fiche.json.bien.prix.net, 475000);
   assert.equal(JSON.stringify(fiche.json).includes('INTERNE-XYZ'), false);
+  assert.equal(fiche.json.bien.reference, '2026-T01', 'le n° de mandat sert de référence publique');
 
   // La dernière photo d'une annonce en ligne ne peut pas être supprimée.
   assert.equal((await s.appel('DELETE', `/api/admin/photos/${p1.json.photo.id}`)).statut, 204);
@@ -364,4 +365,120 @@ test('pages : police servie par le site, plus aucun appel à Google ; barème re
   const bien = fs.readFileSync(path.join(dossier, 'assets', 'js', 'bien.js'), 'utf8');
   assert.match(bien, /'Consulter nos honoraires'/);
   assert.match(bien, /https:\/\/petragest\.com\/honoraires\//);
+});
+
+// ---------------------------------------------------------------------
+// Lot 1 de la réunion avec Catherine (28/10/2026) : n° de mandat, DPE en PDF, mention RSAC.
+// ---------------------------------------------------------------------
+async function annonceEnLigne(s, champs) {
+  const id = (await s.appel('POST', '/api/admin/annonces', {})).json.annonce.id;
+  assert.equal((await s.appel('PATCH', `/api/admin/annonces/${id}`, Object.assign({}, COMPLETE, champs))).statut, 200);
+  assert.equal((await ajouterPhoto(s, id)).statut, 201);
+  return id;
+}
+
+test('n° de mandat : exigé pour mettre en ligne, toléré sur une annonce déjà en ligne, ni effaçable ni recopié', async () => {
+  const s = session(); await connecterAdmin(s);
+  const id = await annonceEnLigne(s, { numero_mandat: null });
+  const A = require('../api/_lib/annonces');
+
+  // Sans n° de mandat, la mise en ligne est refusée.
+  let r = await s.appel('PATCH', `/api/admin/annonces/${id}`, { statut: 'publiee' });
+  assert.equal(r.statut, 422); assert.deepEqual(r.json.manquants, [A.MANQUE_MANDAT]);
+
+  // Annonce mise en ligne avant la règle (cas des 3 lots du Bâtiment C) : elle reste modifiable,
+  // l'éditeur et l'accueil réclament le numéro.
+  await db.requete("update annonces set statut = 'publiee', publie_le = now() where pub_id = $1", [id]);
+  r = await s.appel('PATCH', `/api/admin/annonces/${id}`, { copro_charges_annuelles: null, titre: 'Titre corrigé' });
+  assert.equal(r.statut, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json.annonce.manquants, [A.MANQUE_MANDAT]);
+  const accueil = await s.appel('GET', '/api/admin/activite');
+  assert.ok(accueil.json.avertissements.some((t) => /numéro de mandat/.test(t)), JSON.stringify(accueil.json.avertissements));
+  // Mais les autres obligations restent bloquantes.
+  assert.equal((await s.appel('PATCH', `/api/admin/annonces/${id}`, { dpe_statut: null })).statut, 422);
+
+  // Une fois saisi, il devient la référence publique et ne peut plus être effacé tant que l'annonce est en ligne.
+  r = await s.appel('PATCH', `/api/admin/annonces/${id}`, { numero_mandat: '  2026-099 ' });
+  assert.equal(r.statut, 200); assert.equal(r.json.annonce.numero_mandat, '2026-099'); assert.deepEqual(r.json.annonce.manquants, []);
+  assert.equal((await s.appel('PATCH', `/api/admin/annonces/${id}`, { numero_mandat: '' })).statut, 422);
+  const liste = await s.appel('GET', '/api/admin/annonces');
+  assert.equal(liste.json.annonces.find((x) => x.id === id).numero_mandat, '2026-099');
+  const v = session(); await v.appel('POST', '/api/acces', { code: 'PETRAGEST26X' });
+  const fiche = await v.appel('GET', '/api/biens?id=' + id);
+  assert.equal(fiche.json.bien.reference, '2026-099');
+  assert.equal(JSON.stringify(fiche.json).includes('REF-INTERNE-XYZ'), false, 'la référence interne reste privée');
+
+  // Un autre bien a son propre mandat : la copie ne le reprend pas.
+  const copie = await s.appel('POST', `/api/admin/annonces/${id}/dupliquer`);
+  assert.equal(copie.statut, 201); assert.equal(copie.json.annonce.numero_mandat, null);
+  assert.ok(copie.json.annonce.manquants.includes(A.MANQUE_MANDAT));
+});
+
+test('DPE en PDF : contrôle du fichier, ajout, remplacement, visible des acquéreurs, épargné par l\'entretien, retrait', async () => {
+  const s = session(); await connecterAdmin(s);
+  const id = await annonceEnLigne(s, {});
+  assert.equal((await s.appel('PATCH', `/api/admin/annonces/${id}`, { statut: 'publiee' })).statut, 200);
+  const pdf = (n) => Buffer.concat([Buffer.from('%PDF-1.7\n'), Buffer.alloc(n)]);
+  const joindre = (octets) => s.appel('POST', `/api/admin/annonces/${id}/dpe`, undefined, { binaire: octets });
+
+  let r = await joindre(Buffer.from('Ceci est une photo, pas un PDF.'));
+  assert.equal(r.statut, 400); assert.match(r.json.message, /pas un PDF/);
+  r = await joindre(pdf(4 * 1024 * 1024 + 10));
+  assert.equal(r.statut, 413); assert.match(r.json.message, /4 Mo/);
+
+  r = await joindre(pdf(2000));
+  assert.equal(r.statut, 201);
+  const premier = r.json.dpe_pdf.url;
+  assert.match(premier, /\.pdf$/); assert.equal(r.json.dpe_pdf.octets, 2009);
+  assert.ok(fs.existsSync(stockage.cheminDe(premier)));
+  const servi = await fetch(base + premier);
+  assert.equal(servi.status, 200); assert.match(servi.headers.get('content-type'), /application\/pdf/);
+
+  const v = session(); await v.appel('POST', '/api/acces', { code: 'PETRAGEST26X' });
+  assert.deepEqual((await v.appel('GET', '/api/biens?id=' + id)).json.bien.dpe.fichier, { url: premier, octets: 2009 });
+
+  // Remplacement : le nouveau prend la place, l'ancien fichier est effacé.
+  r = await joindre(pdf(3000));
+  const second = r.json.dpe_pdf.url;
+  assert.notEqual(second, premier);
+  assert.equal(fs.existsSync(stockage.cheminDe(premier)), false);
+  assert.equal((await s.appel('GET', `/api/admin/annonces/${id}`)).json.annonce.dpe_pdf.url, second);
+
+  // L'entretien hebdomadaire efface les fichiers orphelins de plus de 24 h, jamais un DPE joint.
+  const orphelin = await stockage.deposer(`biens/${id}/orphelin.pdf`, pdf(10), 'application/pdf');
+  const vieux = new Date(Date.now() - 3 * 86400000);
+  for (const u of [second, orphelin]) fs.utimesSync(stockage.cheminDe(u), vieux, vieux);
+  const cron = await fetch(base + '/api/cron', { headers: { authorization: 'Bearer ' + 'c'.repeat(40) } });
+  assert.equal(cron.status, 200);
+  assert.ok(fs.existsSync(stockage.cheminDe(second)), 'le DPE joint est conservé');
+  assert.equal(fs.existsSync(stockage.cheminDe(orphelin)), false, 'le fichier orphelin est effacé');
+
+  // Retrait.
+  assert.equal((await s.appel('DELETE', `/api/admin/annonces/${id}/dpe`)).statut, 204);
+  assert.equal(fs.existsSync(stockage.cheminDe(second)), false);
+  assert.equal((await v.appel('GET', '/api/biens?id=' + id)).json.bien.dpe.fichier, null);
+});
+
+test('mention RSAC : affichée sous le nom de l\'agent commercial une fois renseignée, réclamée sur l\'accueil sinon', async () => {
+  const config = require('../api/_lib/config');
+  const avant = config.contact.rsac;
+  const s = session(); await connecterAdmin(s);
+  const v = session(); await v.appel('POST', '/api/acces', { code: 'PETRAGEST26X' });
+  const unBien = async () => {
+    const id = (await v.appel('GET', '/api/biens')).json.biens[0].id;
+    return (await v.appel('GET', '/api/biens?id=' + id)).json.bien;
+  };
+  try {
+    config.contact.rsac = { greffe: '', numero: '' };
+    let b = await unBien();
+    assert.equal(b.contact.qualite, 'Agent commercial'); assert.equal(b.contact.rsac, null);
+    assert.ok((await s.appel('GET', '/api/admin/activite')).json.avertissements.some((t) => /RSAC/.test(t)));
+
+    config.contact.rsac = { greffe: 'La Rochelle', numero: '123 456 789' };
+    b = await unBien();
+    assert.equal(b.contact.rsac, 'RSAC de La Rochelle n° 123 456 789');
+    assert.equal((await s.appel('GET', '/api/admin/activite')).json.avertissements.some((t) => /RSAC/.test(t)), false);
+  } finally {
+    config.contact.rsac = avant;
+  }
 });

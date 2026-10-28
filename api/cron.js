@@ -7,6 +7,7 @@ const crypto = require('node:crypto');
 const db = require('./_lib/db');
 const config = require('./_lib/config');
 const stockage = require('./_lib/stockage');
+const { supprimerOrphelins } = require('./_lib/fichiers');
 const { lire } = require('./_lib/env');
 const h = require('./_lib/http');
 
@@ -18,28 +19,18 @@ function autorise(req) {
   return recu.length === ref.length && crypto.timingSafeEqual(recu, ref);
 }
 
-async function supprimerSiOrphelins(urls) {
-  const aSupprimer = [];
-  for (const url of urls) {
-    const r = await db.une('select count(*)::int as n from photos where url = $1 or url_mini = $1', [url]);
-    if (r.n === 0) aSupprimer.push(url);
-  }
-  if (aSupprimer.length) await stockage.supprimer(aSupprimer);
-  return aSupprimer.length;
-}
-
 async function entretien() {
   const bilan = {};
 
-  // 1. Corbeille : purge définitive après le délai, photos comprises.
+  // 1. Corbeille : purge définitive après le délai, photos et DPE compris.
   const perimees = await db.requete(
-    `select id from annonces where supprime_le is not null
+    `select id, dpe_pdf_url from annonces where supprime_le is not null
        and supprime_le < now() - make_interval(days => $1::int)`, [config.corbeilleJours]);
   let fichiers = 0;
   for (const a of perimees) {
     const photos = await db.requete('select url, url_mini from photos where annonce_id = $1', [a.id]);
     await db.requete('delete from annonces where id = $1', [a.id]);
-    fichiers += await supprimerSiOrphelins(photos.flatMap((p) => [p.url, p.url_mini]));
+    fichiers += await supprimerOrphelins(photos.flatMap((p) => [p.url, p.url_mini]).concat([a.dpe_pdf_url]));
   }
   bilan.annonces_purgees = perimees.length;
 
@@ -74,10 +65,10 @@ async function entretien() {
       returning id`, [config.anonymisationAnnees]);
   bilan.codes_anonymises = anonymises.length;
 
-  // 6. Fichiers déposés mais jamais rattachés à une photo (envoi interrompu), plus de 24 h.
+  // 6. Fichiers déposés mais rattachés à rien (envoi interrompu), plus de 24 h. Un DPE joint compte comme rattaché.
   const limite = Date.now() - 24 * 3600 * 1000;
   const candidats = (await stockage.lister('biens/')).filter((b) => b.date.getTime() < limite).map((b) => b.url);
-  fichiers += await supprimerSiOrphelins(candidats);
+  fichiers += await supprimerOrphelins(candidats);
   bilan.fichiers_supprimes = fichiers;
 
   return bilan;

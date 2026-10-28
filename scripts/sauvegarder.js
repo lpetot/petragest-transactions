@@ -27,17 +27,18 @@ const TABLES = ['admins', 'annonces', 'photos', 'vouchers', 'consultations'];
   if (process.argv.includes('--photos')) {
     const dossierPhotos = path.join(dossier, 'photos');
     fs.mkdirSync(dossierPhotos, { recursive: true });
+    // Photos, puis DPE joints en PDF (même dossier : les noms de fichiers sont uniques).
+    const urls = contenu.tables.photos.flatMap((p) => [p.url, p.url_mini])
+      .concat(contenu.tables.annonces.map((a) => a.dpe_pdf_url).filter(Boolean));
     let n = 0;
-    for (const p of contenu.tables.photos) {
-      for (const url of [p.url, p.url_mini]) {
-        if (!/^https:\/\//.test(url)) continue;
-        const r = await fetch(url);
-        if (!r.ok) { console.warn(`Photo introuvable : ${url}`); continue; }
-        fs.writeFileSync(path.join(dossierPhotos, path.basename(new URL(url).pathname)), Buffer.from(await r.arrayBuffer()));
-        n++;
-      }
+    for (const url of urls) {
+      if (!/^https:\/\//.test(url)) continue;
+      const r = await fetch(url);
+      if (!r.ok) { console.warn(`Fichier introuvable : ${url}`); continue; }
+      fs.writeFileSync(path.join(dossierPhotos, path.basename(new URL(url).pathname)), Buffer.from(await r.arrayBuffer()));
+      n++;
     }
-    console.log(`${n} fichier(s) photo téléchargé(s).`);
+    console.log(`${n} fichier(s) téléchargé(s) (photos et DPE).`);
   }
   console.log(`Sauvegarde écrite dans ${dossier}`);
   await c.fermer();

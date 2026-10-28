@@ -173,6 +173,11 @@
     } else {
       return null;
     }
+    if (d.fichier && d.statut !== 'non_soumis') {
+      contenu.push(h('p', { class: 'dpe-fichier' },
+        h('a', { class: 'btn btn--light btn--sm', href: d.fichier.url, target: '_blank', rel: 'noopener' },
+          P.icone('feuille'), 'Consulter le diagnostic complet (PDF' + (d.fichier.octets ? ', ' + P.taille(d.fichier.octets) : '') + ')')));
+    }
     return h('section', { class: 'bloc reveal' }, P.eyebrow('Performance énergétique'), h('div', { class: 'encadre' }, contenu));
   }
 
@@ -247,11 +252,12 @@
 
   function contactCarte(b) {
     var c = b.contact;
-    var sujet = 'Demande d\'information : ' + b.titre;
+    var sujet = 'Demande d\'information : ' + b.titre + (b.reference ? ' (réf. ' + b.reference + ')' : '');
     return h('div', { class: 'contact-carte', id: 'contact' },
       h('div', { class: 'contact-carte__qui' },
         h('img', { src: c.photo, alt: '', width: '64', height: '64' }),
-        h('div', null, h('strong', null, c.nom), h('span', null, c.role))),
+        h('div', null, h('strong', null, c.nom), h('span', null, [c.qualite, c.role].filter(Boolean).join(' · ')),
+          c.rsac ? h('small', { class: 'contact-carte__rsac' }, c.rsac) : null)),
       h('a', { class: 'btn btn--solid', href: 'tel:' + c.telLien, onclick: function () { journaliser('contact_tel'); } }, P.icone('tel'), 'Appeler ' + c.tel),
       h('a', { class: 'btn btn--light', href: 'mailto:' + c.email + '?subject=' + encodeURIComponent(sujet), onclick: function () { journaliser('contact_mail'); } }, P.icone('mail'), 'Écrire un message'),
       h('p', null, 'Visites sur rendez-vous uniquement. Joignable par téléphone 24h/24 et 7j/7.'));
@@ -268,6 +274,7 @@
         P.eyebrow([type, protection].filter(Boolean).join(' · ')),
         h('h1', null, b.titre),
         lieu ? h('p', { class: 'fiche__lieu' }, P.icone('lieu'), lieu) : null,
+        b.reference ? h('p', { class: 'fiche__ref' }, 'Référence de l\'annonce : ', h('strong', null, b.reference)) : null,
         prixMobile(b)),
       miniCartes(b),
       b.description ? h('section', { class: 'bloc reveal' }, P.eyebrow('Le bien'), paragraphes(b.description)) : null,

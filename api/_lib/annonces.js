@@ -66,6 +66,7 @@ const CHAMPS = {
   dpe_date: { type: 'date' },
   mention_georisques: { type: 'bool', nonNul: true },
 
+  numero_mandat: { type: 'texte', max: 40 },
   reference_interne: { type: 'texte', max: 60 },
   note_interne: { type: 'texte', max: 2000 },
   mise_en_avant: { type: 'bool', nonNul: false },
@@ -73,6 +74,10 @@ const CHAMPS = {
 
 const STATUTS = codesDe(R.statuts);
 const STATUTS_EN_LIGNE = ['publiee', 'sous_offre', 'vendue'];
+
+// Le n° de mandat est exigé depuis le 28/10/2026. Les annonces déjà en ligne sans ce numéro restent
+// modifiables (sinon on ne pourrait plus corriger leurs charges) : l'éditeur le leur réclame.
+const MANQUE_MANDAT = "le numéro de mandat (affiché comme « Référence de l'annonce »)";
 
 // Valide un objet partiel envoyé par l'éditeur. Renvoie { valeurs, erreurs }.
 function valider(entree) {
@@ -146,6 +151,7 @@ function manquantsPourPublier(a, nbPhotos) {
   if (!a.description) m.push('une description');
   if (!a.ville) m.push("l'adresse ou la commune");
   if (!(a.prix_fai > 0)) m.push('le prix');
+  if (!a.numero_mandat) m.push(MANQUE_MANDAT);
   if (!a.honoraires_charge) m.push('la charge des honoraires (vendeur ou acquéreur)');
   else if (a.honoraires_charge === 'acquereur') {
     if (!(a.honoraires_ttc > 0)) m.push('le montant des honoraires TTC');
@@ -206,9 +212,11 @@ const iso = (d) => (d instanceof Date ? d.toISOString() : d || null);
 
 // Fiche complète vue par un visiteur. Liste blanche STRICTE : jamais d'identifiant interne,
 // de référence interne, de note interne ni de coordonnées exactes (sauf choix « adresse exacte »).
+// La référence publique est le n° de mandat.
 function versPublic(a, photos) {
   return {
     id: a.pub_id,
+    reference: a.numero_mandat || null,
     statut: a.statut,
     type_bien: a.type_bien,
     titre: a.titre,
@@ -257,13 +265,24 @@ function versPublic(a, photos) {
       depenses_min: a.dpe_depenses_min,
       depenses_max: a.dpe_depenses_max,
       annee_prix: a.dpe_annee_prix,
+      fichier: a.dpe_pdf_url ? { url: a.dpe_pdf_url, octets: a.dpe_pdf_octets } : null,
     },
     mention_georisques: a.mention_georisques,
     publie_le: iso(a.publie_le),
     photos: (photos || []).map((p) => ({
       url: p.url, url_mini: p.url_mini, largeur: p.largeur, hauteur: p.hauteur, legende: p.legende || '',
     })),
-    contact: config.contact,
+    contact: contactPublic(),
+  };
+}
+
+// L'interlocutrice affichée sur la fiche, avec sa mention RSAC si elle est renseignée.
+function contactPublic() {
+  const c = config.contact;
+  const rsac = c.rsac && c.rsac.greffe && c.rsac.numero ? `RSAC de ${c.rsac.greffe} n° ${c.rsac.numero}` : null;
+  return {
+    nom: c.nom, role: c.role, qualite: c.qualite || null, rsac,
+    tel: c.tel, telLien: c.telLien, email: c.email, photo: c.photo,
   };
 }
 
@@ -296,6 +315,6 @@ const SQL_VISIBLE = `a.supprime_le is null and (a.statut in ('publiee','sous_off
   or (a.statut = 'vendue' and a.vendu_le > now() - make_interval(days => $1::int)))`;
 
 module.exports = {
-  CHAMPS, STATUTS, STATUTS_EN_LIGNE, SQL_VISIBLE,
+  CHAMPS, STATUTS, STATUTS_EN_LIGNE, SQL_VISIBLE, MANQUE_MANDAT,
   valider, manquantsPourPublier, positionDecalee, prix, versPublic, versCarte,
 };

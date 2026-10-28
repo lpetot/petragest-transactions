@@ -73,7 +73,7 @@ test('annonces : validation des champs (liste blanche, types, bornes)', () => {
 });
 
 const complete = {
-  type_bien: 'maison', titre: 'Maison', description: 'Belle maison', ville: 'Rochefort', prix_fai: 500000,
+  type_bien: 'maison', titre: 'Maison', description: 'Belle maison', ville: 'Rochefort', prix_fai: 500000, numero_mandat: '2026-001',
   honoraires_charge: 'vendeur', surface_habitable: 120, copropriete: false,
   dpe_statut: 'realise', dpe_classe: 'C', ges_classe: 'B', dpe_depenses_min: 1000, dpe_depenses_max: 1400,
   dpe_annee_prix: 2023, dpe_date: '2024-05-01',
@@ -88,6 +88,7 @@ test('publication : une annonce complète passe, chaque oubli légal est signal�
   assert.ok(A.manquantsPourPublier({ ...complete, honoraires_charge: 'acquereur' }, 1).some((m) => m.includes('honoraires')));
   assert.ok(A.manquantsPourPublier({ ...complete, honoraires_charge: 'acquereur', honoraires_ttc: 600000 }, 1).some((m) => m.includes('inférieurs')));
   assert.ok(A.manquantsPourPublier({ ...complete, copropriete: null }, 1).some((m) => m.includes('copropriété')));
+  assert.ok(A.manquantsPourPublier({ ...complete, numero_mandat: null }, 1).includes(A.MANQUE_MANDAT), 'n° de mandat');
   // Terrain : ni surface habitable ni DPE obligatoires si « non soumis ».
   assert.deepEqual(A.manquantsPourPublier({ ...complete, type_bien: 'terrain', surface_habitable: null, surface_terrain: 2000, dpe_statut: 'non_soumis' }, 1), []);
 });
