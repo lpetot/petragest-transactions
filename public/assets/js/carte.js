@@ -43,8 +43,26 @@
       cercle.style.height = diametre + 'px';
       conteneur.appendChild(cercle);
     }
-    conteneur.appendChild(P.h('span', { class: 'carte__credit' }, '© IGN, Plan IGN'));
+    var credit = P.h('span', { class: 'carte__credit' }, '© IGN, Plan IGN');
+    conteneur.appendChild(credit);
     conteneur.setAttribute('role', 'img');
     conteneur.setAttribute('aria-label', precision === 'exacte' ? 'Carte : emplacement du bien' : 'Carte : zone approximative du bien, dans un rayon de 500 mètres');
+
+    // Repères numérotés (« Découvrir les environs ») : même projection que les tuiles, par rapport au centre.
+    var reperes = [];
+    return {
+      placer: function (latL, lngL, texte) {
+        var lr = latL * Math.PI / 180;
+        var px = ((lngL + 180) / 360 * n - x) * 256;
+        var py = ((1 - Math.log(Math.tan(lr) + 1 / Math.cos(lr)) / Math.PI) / 2 * n - y) * 256;
+        var r = P.h('span', { class: 'carte__lieu', 'aria-hidden': 'true' }, texte);
+        r.style.left = 'calc(50% + ' + Math.round(px) + 'px)';
+        r.style.top = 'calc(50% + ' + Math.round(py) + 'px)';
+        conteneur.insertBefore(r, credit);
+        reperes.push(r);
+      },
+      effacer: function () { reperes.forEach(function (r) { r.remove(); }); reperes = []; },
+      credit: function (texte) { credit.textContent = texte; },
+    };
   };
 })();

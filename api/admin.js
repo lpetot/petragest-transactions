@@ -9,6 +9,7 @@ const A = require('./_lib/annonces');
 const codes = require('./_lib/codes');
 const stockage = require('./_lib/stockage');
 const fichiers = require('./_lib/fichiers');
+const ENVIRONS = require('../public/assets/js/environs.js');
 const dates = require('./_lib/dates');
 const sec = require('./_lib/securite');
 const h = require('./_lib/http');
@@ -180,6 +181,11 @@ function versAnnonceAdmin(a, photos) {
       id: p.id, url: p.url, url_mini: p.url_mini, largeur: p.largeur, hauteur: p.hauteur, legende: p.legende || '',
     })),
     dpe_pdf: a.dpe_pdf_url ? { url: a.dpe_pdf_url, octets: a.dpe_pdf_octets } : null,
+    environs: {
+      categories: a.environs && Array.isArray(a.environs.categories) ? a.environs.categories : [],
+      le: iso(a.environs_le),
+      a_jour: A.environsAJour(a),
+    },
     manquants: A.manquantsPourPublier(a, photos.length),
     prix_detail: A.prix(a),
   });
@@ -486,6 +492,27 @@ async function dpeRetirer(req, res, m) {
 }
 
 // =====================================================================
+// Environs (OpenStreetMap)
+// =====================================================================
+// L'espace de gestion interroge Overpass (qui peut mettre une minute à répondre, trop long pour une
+// fonction Vercel) puis envoie ici les lieux bruts ; le serveur les classe lui-même à partir de la
+// position enregistrée, et refuse un résultat calculé pour une autre adresse.
+async function environsEnregistrer(req, res, m) {
+  const a = await trouverAnnonce(m[1]);
+  if (a.supprime_le) throw new E(409, 'corbeille', 'Cette annonce est dans la corbeille.');
+  const corps = await h.lireJson(req, 1500000);
+  const cle = A.clePosition(a);
+  if (!cle) throw new E(409, 'sans_position', "Renseignez d'abord l'adresse du bien.");
+  if (corps.pour !== cle) throw new E(409, 'position', "L'adresse a changé entre-temps : la recherche va être relancée.");
+  if (!Array.isArray(corps.elements)) throw new E(400, 'format', 'Réponse OpenStreetMap mal formée.');
+  const environs = ENVIRONS.construire(corps.elements, a.lat, a.lng, a.ville);
+  const apres = await db.une(
+    `update annonces set environs = $1::jsonb, environs_le = now(), environs_pour = $2 where id = $3 returning *`,
+    [JSON.stringify(environs), cle, a.id]);
+  h.envoyerJson(res, 200, { annonce: versAnnonceAdmin(apres, await photosDe(a.id)) });
+}
+
+// =====================================================================
 // Codes d'accès
 // =====================================================================
 function statutCode(v) {
@@ -738,6 +765,7 @@ const ROUTES = [
   ['PUT', new RegExp(`^annonces/${ID}/photos/ordre$`), photosOrdre],
   ['POST', new RegExp(`^annonces/${ID}/dpe$`), dpeJoindre],
   ['DELETE', new RegExp(`^annonces/${ID}/dpe$`), dpeRetirer],
+  ['POST', new RegExp(`^annonces/${ID}/environs$`), environsEnregistrer],
   ['PATCH', /^photos\/(\d{1,9})$/, photoModifier],
   ['DELETE', /^photos\/(\d{1,9})$/, photoSupprimer],
   ['GET', /^codes$/, codesListe],

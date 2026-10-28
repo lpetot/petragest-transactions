@@ -197,9 +197,10 @@
     var loc = b.localisation;
     var lieu = [loc.quartier, loc.ville].filter(Boolean).join(', ') + (loc.code_postal ? ' (' + loc.code_postal + ')' : '');
     var elts = [P.eyebrow('Localisation'), h('h2', null, loc.affichage === 'exacte' && loc.adresse ? loc.adresse + ', ' + lieu : lieu)];
+    var plan = null;
     if (loc.position) {
       var carte = h('div');
-      P.carte(carte, loc.position.lat, loc.position.lng, loc.position.precision);
+      plan = P.carte(carte, loc.position.lat, loc.position.lng, loc.position.precision);
       elts.push(carte);
       elts.push(h('p', { class: 'carte__legende' }, P.icone('info'), loc.position.precision === 'exacte'
         ? 'Emplacement du bien.'
@@ -207,7 +208,53 @@
     } else {
       elts.push(h('p', { class: 'carte__legende' }, P.icone('info'), "L'adresse exacte vous sera communiquée lors de la visite."));
     }
+    if (loc.environs && loc.environs.length) elts.push(blocEnvirons(loc.environs, plan));
     return h('section', { class: 'bloc reveal' }, elts);
+  }
+
+  // « Découvrir les environs » : un onglet par catégorie, la liste numérotée et les mêmes numéros sur la carte.
+  function blocEnvirons(categories, plan) {
+    var actif = categories[0].code;
+    var onglets = h('div', { class: 'environs__onglets', role: 'tablist', 'aria-label': 'Catégories de lieux' });
+    var liste = h('ol', { class: 'environs__liste', id: 'environs-liste', role: 'tabpanel' });
+    function dessiner() {
+      P.vider(onglets);
+      P.vider(liste);
+      if (plan) plan.effacer();
+      categories.forEach(function (c) {
+        onglets.appendChild(h('button', { type: 'button', role: 'tab', class: 'environs__onglet', 'aria-selected': String(c.code === actif),
+          'aria-controls': 'environs-liste', onclick: function () { actif = c.code; dessiner(); } }, c.libelle));
+      });
+      var cat = categories.filter(function (c) { return c.code === actif; })[0];
+      cat.lieux.forEach(function (l, i) {
+        liste.appendChild(h('li', null,
+          h('span', { class: 'environs__num', 'aria-hidden': 'true' }, String(i + 1)),
+          h('span', { class: 'environs__quoi' }, h('strong', null, l.nom || l.type), l.nom ? h('small', null, l.type) : null),
+          h('span', { class: 'environs__duree' }, window.ENVIRONS.texteDuree(l))));
+        if (plan) plan.placer(l.lat, l.lng, String(i + 1));
+      });
+    }
+    dessiner();
+    return h('div', { class: 'environs' },
+      h('h3', null, 'Découvrir les environs'),
+      onglets, liste,
+      h('p', { class: 'environs__note' }, 'Durées indicatives : à pied jusqu\'à 20 minutes, sinon en voiture. Lieux : © les contributeurs d\'OpenStreetMap.'));
+  }
+
+  // « Les autres biens de l'agence », tout en bas de la fiche (demande de Catherine, 28/10/2026).
+  function autresBiens(b) {
+    P.api('/api/biens').then(function (r) {
+      var autres = (r.biens || []).filter(function (x) { return x.id !== b.id && x.statut !== 'vendue'; }).slice(0, 3);
+      if (!autres.length) return;
+      var section = h('section', { class: 'autres-biens', 'aria-labelledby': 'autres-biens-titre' },
+        P.eyebrow('Petra Gest'),
+        h('div', { class: 'autres-biens__tete' },
+          h('h2', { id: 'autres-biens-titre' }, 'Les autres biens de l\'agence'),
+          h('a', { class: 'btn btn--light btn--sm', href: '/biens' }, 'Voir tous nos biens', P.icone('fleche'))),
+        h('div', { class: 'grille' }, autres.map(function (x) { return P.carteBien(x); })));
+      fiche.parentNode.appendChild(section);
+      P.reveler(section);
+    }).catch(function () { /* section facultative : la fiche reste complète sans elle */ });
   }
 
   function prixCarte(b) {
@@ -322,6 +369,7 @@
     apercu(bien);
     construireGalerie(bien);
     construireFiche(bien);
+    autresBiens(bien);
   }).catch(function (err) {
     if (P.visiteur.gererErreur(err)) return;
     galerie.hidden = true;

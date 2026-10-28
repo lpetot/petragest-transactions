@@ -16,13 +16,19 @@ remis : l'espace vous demande aussitôt d'en choisir un personnel (12 caractère
    Le bouton « Proposer un titre » écrit un titre à partir de ces informations ; vous pouvez le modifier.
 4. **Adresse** : tapez le début de l'adresse et choisissez-la dans la liste. Par défaut, les acquéreurs ne voient
    qu'une zone approximative : l'adresse exacte reste confidentielle jusqu'à la visite.
-5. **Description** et **atouts** (cases à cocher).
+   Les lieux utiles autour du bien (transports, écoles, commerces, santé) sont ensuite recherchés tout seuls sur
+   OpenStreetMap pour la rubrique « Découvrir les environs » de l'annonce : cela peut prendre une minute, vous pouvez
+   continuer pendant ce temps. « Voir ce que verront les acquéreurs » montre la liste ; « Actualiser » la refait.
+5. **Description** et **atouts** (cases à cocher). Le bouton **Écrire la phrase des atouts** ajoute à la fin de la
+   description une phrase qui reprend les cases cochées ; relancé, il la remplace.
 6. **DPE** : cliquez sur les lettres énergie et climat, reportez les dépenses annuelles et la date du diagnostic.
    Avec **Joindre le DPE (PDF)**, ajoutez le diagnostic complet : les acquéreurs pourront le consulter depuis
    l'annonce (4 Mo au maximum : le DPE seul, pas tout le dossier de diagnostics).
 7. **Mandat, honoraires et copropriété** : le **n° de mandat** (obligatoire : il s'affiche sur l'annonce comme
    « Référence de l'annonce » ; la référence interne, elle, reste privée), qui paie les honoraires, et si le bien
-   est en copropriété.
+   est en copropriété. Chaque option d'honoraires est expliquée sur place. Honoraires à la charge de l'acquéreur :
+   **Calculer à partir du prix net vendeur** applique le taux du barème (6 % en mandat simple, 5 % en exclusif)
+   et remplit le prix et le montant des honoraires.
 8. En bas : **Mettre en ligne**. S'il manque une mention obligatoire, la liste s'affiche : complétez et recommencez.
 
 Tant que l'annonce est un brouillon, tout est enregistré automatiquement. Une fois en ligne, pensez au bouton

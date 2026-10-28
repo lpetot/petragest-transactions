@@ -482,3 +482,29 @@ test('mention RSAC : affichée sous le nom de l\'agent commercial une fois rense
     config.contact.rsac = avant;
   }
 });
+
+test('environs : enregistrés pour la position actuelle seulement, visibles sur la fiche, effacés de la vue si l\'adresse change', async () => {
+  const s = session(); await connecterAdmin(s);
+  const id = await annonceEnLigne(s, {});
+  assert.equal((await s.appel('PATCH', `/api/admin/annonces/${id}`, { statut: 'publiee' })).statut, 200);
+  const { elements } = require('./donnees/overpass-rochefort.json');
+  const envoyer = (pour) => s.appel('POST', `/api/admin/annonces/${id}/environs`, { pour, elements });
+
+  let r = await envoyer('45.000000,-1.000000');
+  assert.equal(r.statut, 409); assert.equal(r.json.erreur, 'position');
+  r = await envoyer('45.940000,-0.960000');   // lat et lng de COMPLETE
+  assert.equal(r.statut, 200, JSON.stringify(r.json));
+  assert.equal(r.json.annonce.environs.a_jour, true);
+  assert.ok(r.json.annonce.environs.categories.length >= 3);
+
+  const v = session(); await v.appel('POST', '/api/acces', { code: 'PETRAGEST26X' });
+  let bien = (await v.appel('GET', '/api/biens?id=' + id)).json.bien;
+  assert.ok(bien.localisation.environs.some((c) => c.code === 'transports'));
+  assert.equal(JSON.stringify(bien).includes('Docteur Exemple'), false);
+
+  // Adresse déplacée : les anciens environs disparaissent de la fiche et l'éditeur sait qu'il faut relancer.
+  r = await s.appel('PATCH', `/api/admin/annonces/${id}`, { lat: 45.95, lng: -0.97 });
+  assert.equal(r.json.annonce.environs.a_jour, false);
+  bien = (await v.appel('GET', '/api/biens?id=' + id)).json.bien;
+  assert.equal(bien.localisation.environs, null);
+});

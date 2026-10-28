@@ -202,6 +202,24 @@ function prix(a) {
   return p;
 }
 
+// Position exacte sous forme de texte : sert à savoir si les « environs » enregistrés valent encore
+// pour l'adresse actuelle (sinon ils ne sont plus affichés, en attendant une nouvelle recherche).
+function clePosition(a) {
+  if (a.lat === null || a.lat === undefined || a.lng === null || a.lng === undefined) return null;
+  return Number(a.lat).toFixed(6) + ',' + Number(a.lng).toFixed(6);
+}
+
+function environsAJour(a) {
+  return Boolean(a.environs && a.environs_pour && a.environs_pour === clePosition(a));
+}
+
+// Ce que voit l'acquéreur : rien si l'annonce ne montre que la commune (les lieux trahiraient le quartier).
+function environsPublics(a) {
+  if (a.affichage_adresse === 'commune' || !environsAJour(a)) return null;
+  const c = a.environs && Array.isArray(a.environs.categories) ? a.environs.categories : [];
+  return c.length ? c : null;
+}
+
 function position(a) {
   if (a.affichage_adresse === 'exacte' && a.lat !== null && a.lng !== null) return { lat: a.lat, lng: a.lng, precision: 'exacte' };
   if (a.affichage_adresse === 'zone' && a.lat_pub !== null && a.lng_pub !== null) return { lat: a.lat_pub, lng: a.lng_pub, precision: 'zone' };
@@ -233,6 +251,7 @@ function versPublic(a, photos) {
       adresse: a.affichage_adresse === 'exacte' ? a.adresse : null,
       affichage: a.affichage_adresse,
       position: position(a),
+      environs: environsPublics(a),
     },
     surface_habitable: a.surface_habitable,
     surface_carrez: a.surface_carrez,
@@ -316,5 +335,5 @@ const SQL_VISIBLE = `a.supprime_le is null and (a.statut in ('publiee','sous_off
 
 module.exports = {
   CHAMPS, STATUTS, STATUTS_EN_LIGNE, SQL_VISIBLE, MANQUE_MANDAT,
-  valider, manquantsPourPublier, positionDecalee, prix, versPublic, versCarte,
+  valider, manquantsPourPublier, positionDecalee, prix, versPublic, versCarte, clePosition, environsAJour,
 };

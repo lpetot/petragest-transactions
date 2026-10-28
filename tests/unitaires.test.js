@@ -169,3 +169,61 @@ test('import Bâtiment C : données valides pour l\'éditeur, photos présentes,
     for (const p of photos) for (const s of ['g', 'm']) assert.ok(fs.existsSync(path.join(dossier, 'photos', `${p.nom}-${s}.jpg`)), p.nom);
   }
 });
+
+// ---------------------------------------------------------------------
+// Lot 2 de la réunion avec Catherine (28/10/2026) : environs, atouts.
+// ---------------------------------------------------------------------
+test('environs : durées arrondies, à pied jusqu\'à 20 min puis en voiture', () => {
+  const E = require('../public/assets/js/environs.js');
+  assert.deepEqual(E.duree(100), { minutes: 5, mode: 'pied' });
+  assert.deepEqual(E.duree(1150), { minutes: 20, mode: 'pied' });
+  assert.deepEqual(E.duree(1200), { minutes: 10, mode: 'voiture' });
+  assert.equal(E.texteDuree({ minutes: 15, mode: 'pied' }), '15 min à pied');
+});
+
+test('environs : classement d\'une vraie réponse OpenStreetMap (Arsenal Royal, Rochefort)', () => {
+  const E = require('../public/assets/js/environs.js');
+  const { elements } = require('./donnees/overpass-rochefort.json');
+  const r = E.construire(elements, 45.942539, -0.957208, 'Rochefort');
+  assert.deepEqual(r.categories.map((c) => c.code), ['transports', 'education', 'services', 'sante']);
+  const tous = r.categories.flatMap((c) => c.lieux);
+  const texte = JSON.stringify(r);
+  assert.equal(texte.includes('Docteur Exemple'), false, 'jamais de nom de médecin ni de dentiste');
+  assert.equal(texte.includes('metres'), false, 'pas de distance exacte (elle trahirait l\'adresse)');
+  for (const l of tous) {
+    assert.equal(l.minutes % 5, 0); assert.ok(l.minutes <= 30); assert.ok(['pied', 'voiture'].includes(l.mode));
+  }
+  const de = (code) => r.categories.find((c) => c.code === code).lieux;
+  assert.ok(de('transports').some((l) => l.nom === 'Gare de Rochefort' && l.mode === 'pied'));
+  const bus = de('transports').filter((l) => l.type === 'Arrêt de bus');
+  assert.equal(bus.length, 2); assert.notEqual(bus[0].nom, bus[1].nom, 'un arrêt des deux côtés de la rue ne compte qu\'une fois');
+  assert.ok(de('education').some((l) => l.type === 'Lycée'));
+  assert.ok(de('services').some((l) => l.type === 'Mairie' && l.nom === 'Mairie de Rochefort'));
+  assert.ok(de('services').some((l) => l.type === 'Bureau de poste' && l.nom === null), 'la poste « Rochefort » ne répète pas la commune');
+  assert.equal(de('services').some((l) => l.type === 'Marché' && l.mode === 'voiture'), false);
+  assert.ok(de('sante').some((l) => l.type === 'Médecin' && l.nom === null));
+  assert.ok(de('sante').some((l) => l.type === 'Hôpital' && l.mode === 'voiture'));
+  // Données reçues du navigateur : seules la position et quelques étiquettes passent.
+  const propre = E.nettoyer([{ lat: 1, lon: 2, tags: { name: 'X', amenity: 'bank', phone: '0102030405' } }, { lat: 'a' }, null, { center: { lat: 3, lon: 4 } }]);
+  assert.deepEqual(propre, [{ lat: 1, lng: 2, tags: { name: 'X', amenity: 'bank' } }, { lat: 3, lng: 4, tags: {} }]);
+});
+
+test('environs : visibles seulement pour l\'adresse enregistrée, jamais quand l\'annonce ne montre que la commune', () => {
+  const a = {
+    ...complete, pub_id: 'abcdefghij', statut: 'publiee', atouts: [], lat: 45.942539, lng: -0.957208, lat_pub: 45.94, lng_pub: -0.95,
+    affichage_adresse: 'zone', environs: { categories: [{ code: 'sante', libelle: 'Santé', lieux: [{ type: 'Pharmacie', nom: 'P', minutes: 5, mode: 'pied', lat: 45.94, lng: -0.95 }] }] },
+    environs_pour: '45.942539,-0.957208',
+  };
+  assert.equal(A.clePosition(a), '45.942539,-0.957208');
+  assert.equal(A.versPublic(a, []).localisation.environs.length, 1);
+  assert.equal(A.versPublic({ ...a, affichage_adresse: 'commune' }, []).localisation.environs, null);
+  assert.equal(A.versPublic({ ...a, lat: 45.95 }, []).localisation.environs, null, 'adresse changée : on n\'affiche plus les anciens environs');
+  assert.equal(A.versPublic({ ...a, environs: null }, []).localisation.environs, null);
+});
+
+test('atouts : chacun a sa tournure pour la phrase de la description, aucun tiret long', () => {
+  const R = require('../public/assets/js/referentiel.js');
+  for (const [code] of R.atouts) assert.ok(R.phrasesAtouts[code], `tournure manquante : ${code}`);
+  assert.equal(/[–—]/.test(JSON.stringify(R.phrasesAtouts) + JSON.stringify(R.atouts)), false);
+  assert.deepEqual(R.baremeVente.map((x) => x[0]), [6, 5]);
+});

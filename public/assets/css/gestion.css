@@ -262,6 +262,13 @@ body.gestion{font-weight:400;background:var(--paper)}
 .g-accueil__alerte li + li{margin-top:.35rem}
 .g-dpe-pdf a{color:var(--navy-deep);font-weight:600;text-decoration:underline;text-underline-offset:3px}
 .g-dpe-pdf__boutons{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.6rem}
+.g-aide--honoraires p + p{margin-top:.4rem}
+.g-environs{display:grid;gap:.6rem}
+.g-environs__etat{display:flex;gap:.5rem;align-items:flex-start;font-size:.88rem;color:var(--navy-deep);line-height:1.5}
+.g-environs__etat svg{width:16px;height:16px;flex-shrink:0;margin-top:.2rem;color:var(--sand-deep)}
+.g-environs__liste{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-top:.8rem;font-size:.86rem}
+.g-environs__liste strong{display:block;margin-bottom:.3rem;color:var(--navy-deep)}
+.g-environs__liste li + li{margin-top:.2rem}
 .g-manquants ul{list-style:none;display:grid;gap:.25rem}
 .g-manquants li{display:flex;gap:.5rem;align-items:flex-start;font-size:.92rem}
 .g-manquants li::before{content:"";width:6px;height:6px;margin-top:.55rem;background:var(--sand-deep);transform:rotate(45deg);flex-shrink:0}

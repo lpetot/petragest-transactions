@@ -39,7 +39,7 @@ Lire d'abord `README.md`.
 
 ## Vérifier son travail
 
-- `npm test` doit rester entièrement vert (34 tests au 28/10/2026 ; ajouter un test pour toute nouvelle règle).
+- `npm test` doit rester entièrement vert (39 tests au 28/10/2026 ; ajouter un test pour toute nouvelle règle).
 - Vérification visuelle : lancer le serveur local et ouvrir les pages dans le navigateur habituel, en 1440 px et en
   390 px. Aucune page ne doit défiler horizontalement.
 - **Ne jamais lancer Chrome en série avec un profil temporaire neuf** (`--user-data-dir` jetable, captures
@@ -72,6 +72,8 @@ Lire d'abord `README.md`.
 | Espace de gestion (toute l'interface) | `public/assets/js/gestion.js`, `public/assets/css/gestion.css` |
 | Contact affiché, durées, réglages | `api/_lib/config.js` |
 | Règles de publication (mentions obligatoires) | `api/_lib/annonces.js` (`manquantsPourPublier`) |
+| « Découvrir les environs » (requête OpenStreetMap, classement, durées) | `public/assets/js/environs.js` (partagé), `scripts/environs.js` |
+| Carte d'un bien (catalogue et « autres biens » de la fiche) | `public/assets/js/carte-bien.js` |
 | Données de démonstration | `scripts/local/demo.js`, illustrations `scripts/demo/photos/` |
 
 ## Ce qu'il ne faut pas faire

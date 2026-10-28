@@ -49,6 +49,35 @@
       ['commerces', 'Proche commerces'],
       ['gardien', 'Gardien'],
       ['double_vitrage', 'Double vitrage'],
+      // Équipements ajoutés après la réunion du 28/10/2026 (Catherine : « cases à cocher, cheminée, etc. »)
+      ['cuisine_equipee', 'Cuisine équipée'],
+      ['dressing', 'Dressing'],
+      ['buanderie', 'Buanderie'],
+      ['veranda', 'Véranda'],
+      ['poutres', 'Poutres apparentes'],
+      ['pierres', 'Pierres apparentes'],
+      ['stationnement', 'Place de stationnement'],
+      ['climatisation', 'Climatisation'],
+      ['fibre', 'Fibre optique'],
+      ['digicode', 'Interphone ou digicode'],
+    ],
+    // Tournure de chaque atout dans la phrase écrite par « Écrire la phrase des atouts » (espace de gestion).
+    phrasesAtouts: {
+      parc: 'un parc', jardin: 'un jardin', piscine: 'une piscine', terrasse: 'une terrasse', balcon: 'un balcon',
+      dependances: 'des dépendances', garage: 'un garage', cave: 'une cave', grenier: 'un grenier',
+      cheminee: 'une cheminée', parquet: 'du parquet ancien', moulures: 'des moulures et décors',
+      hauteur_plafond: 'une belle hauteur sous plafond', vue_mer: 'une vue sur la mer', vue_degagee: 'une vue dégagée',
+      calme: 'un environnement calme', centre_ville: 'une situation en centre-ville', commerces: 'la proximité des commerces',
+      gardien: 'un gardien', double_vitrage: 'le double vitrage', cuisine_equipee: 'une cuisine équipée',
+      dressing: 'un dressing', buanderie: 'une buanderie', veranda: 'une véranda', poutres: 'des poutres apparentes',
+      pierres: 'des pierres apparentes', stationnement: 'une place de stationnement', climatisation: 'la climatisation',
+      fibre: 'la fibre optique', digicode: 'un interphone ou un digicode',
+    },
+    // Barème de vente publié par Petra Gest (page Honoraires, 22/10/2026) : maisons et appartements,
+    // honoraires TTC à la charge de l'acquéreur, en % du prix net vendeur. Sert au calcul proposé dans l'éditeur.
+    baremeVente: [
+      [6, 'Mandat simple'],
+      [5, 'Mandat exclusif'],
     ],
     protections: [
       ['aucune', 'Aucune protection'],

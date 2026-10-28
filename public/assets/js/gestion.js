@@ -432,6 +432,7 @@
         majManquants();
         majApercuCarte();
         majBarre();
+        verifierEnvirons();
         return true;
       }).catch(function (err) {
         etatSauvegarde('erreur');
@@ -683,6 +684,7 @@
     var carteApercu = h('div', { class: 'g-carte-apercu' });
     var texteCarte = h('p', { class: 'carte__legende' });
     function majApercuCarte() {
+      dessinerEnvirons();
       var mode = a.affichage_adresse;
       carteApercu.hidden = true;
       if (a.lat === null || a.lat === undefined) { texteCarte.textContent = ''; return; }
@@ -771,7 +773,115 @@
           saisie('quartier', 'Quartier (facultatif)', { max: 100, placeholder: 'Centre historique' }),
           saisie('code_postal', 'Code postal', { max: 5, placeholder: '17300' }),
           saisie('ville', 'Commune', { max: 100, placeholder: 'Rochefort' }))));
+      zoneAdresse.appendChild(zoneEnvirons);
       majApercuCarte();
+      dessinerEnvirons();
+    }
+
+    // ---------- Environs (OpenStreetMap) ----------
+    // La recherche part d'ici, en tâche de fond : Overpass peut mettre une minute à répondre aux heures
+    // chargées. Le serveur classe et enregistre ; les acquéreurs ne lisent que le résultat enregistré.
+    var E = window.ENVIRONS;
+    var zoneEnvirons = h('div', { class: 'g-environs' });
+    var rechercheEnvirons = null;   // position en cours de recherche
+    var echecEnvirons = false;
+    function clePosition() {
+      return a.lat === null || a.lat === undefined || a.lng === null || a.lng === undefined ? null
+        : Number(a.lat).toFixed(6) + ',' + Number(a.lng).toFixed(6);
+    }
+    // Après chaque enregistrement et à l'ouverture : relance si l'adresse enregistrée n'a pas encore ses environs.
+    function verifierEnvirons() {
+      if (a.en_corbeille || !clePosition() || (a.environs && a.environs.a_jour) || rechercheEnvirons || echecEnvirons) return;
+      if (modifs.lat !== undefined || modifs.lng !== undefined) return;   // position pas encore enregistrée
+      chercherEnvirons(false);
+    }
+    function chercherEnvirons(manuel) {
+      var pour = clePosition();
+      if (!pour || rechercheEnvirons) return;
+      rechercheEnvirons = pour; echecEnvirons = false; dessinerEnvirons();
+      var requete = E.requete(a.lat, a.lng);
+      (function essayer(i) {
+        var arret = new AbortController();
+        var minuteur = setTimeout(function () { arret.abort(); }, 100000);
+        fetch(E.SERVEURS[i], { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'data=' + encodeURIComponent(requete), signal: arret.signal })
+          .then(function (r) { if (!r.ok) throw new Error('Overpass ' + r.status); return r.json(); }, function (e) { throw new Error('Overpass ' + e.message); })
+          .then(function (d) {
+            clearTimeout(minuteur);
+            return api('annonces/' + a.id + '/environs', { method: 'POST', corps: { pour: pour, elements: E.nettoyer(d.elements) } })
+              .then(function (r) {
+                rechercheEnvirons = null;
+                a.environs = r.annonce.environs;
+                dessinerEnvirons();
+                if (manuel) P.toast('Environs mis à jour.');
+              });
+          })
+          .catch(function (err) {
+            clearTimeout(minuteur);
+            if (err instanceof P.ErreurApi) {
+              rechercheEnvirons = null;
+              if (err.code === 'position') { verifierEnvirons(); return; }   // l'adresse a changé : on repart
+              echecEnvirons = true; dessinerEnvirons(); signaler(err); return;
+            }
+            if (i + 1 < E.SERVEURS.length) { essayer(i + 1); return; }
+            rechercheEnvirons = null; echecEnvirons = true; dessinerEnvirons();
+          });
+      })(0);
+    }
+    function dessinerEnvirons() {
+      P.vider(zoneEnvirons);
+      if (!clePosition()) return;
+      var titre = h('span', { class: 'g-label' }, 'Découvrir les environs');
+      var env = a.environs || { categories: [], a_jour: false };
+      if (rechercheEnvirons) {
+        zoneEnvirons.append(titre, h('p', { class: 'g-environs__etat' }, P.icone('horloge'),
+          'Recherche des lieux autour du bien (transports, écoles, commerces, santé) sur OpenStreetMap. Cela peut prendre une minute : vous pouvez continuer votre saisie.'));
+        return;
+      }
+      if (echecEnvirons) {
+        zoneEnvirons.append(titre, h('p', { class: 'g-environs__etat' }, P.icone('alerte'),
+          'Le service OpenStreetMap ne répond pas pour l\'instant. L\'annonce reste valable sans cette rubrique.'),
+        bouton('Réessayer', 'btn--light btn--sm', 'rafraichir', function () { echecEnvirons = false; chercherEnvirons(true); }));
+        return;
+      }
+      if (!env.a_jour) {
+        zoneEnvirons.append(titre, bouton('Chercher les lieux autour du bien', 'btn--light btn--sm', 'recherche', function () { chercherEnvirons(true); }));
+        return;
+      }
+      var nb = env.categories.reduce(function (n, c) { return n + c.lieux.length; }, 0);
+      var resume = nb
+        ? P.pluriel(nb, 'lieu trouvé', 'lieux trouvés') + ' : ' + env.categories.map(function (c) { return c.libelle.toLowerCase() + ' (' + c.lieux.length + ')'; }).join(', ') + '.'
+        : 'Aucun lieu trouvé autour du bien : la rubrique ne sera pas affichée.';
+      [titre,
+        h('p', { class: 'g-environs__etat' }, P.icone('coche'), resume + (env.le ? ' Recherche du ' + P.date(env.le) + '.' : '')),
+        a.affichage_adresse === 'commune' ? h('p', { class: 'g-environs__etat' }, P.icone('info'), 'Non affichés aux acquéreurs : l\'annonce ne montre que la commune.') : null,
+        nb ? h('details', { class: 'g-details' }, h('summary', null, 'Voir ce que verront les acquéreurs'),
+          h('div', { class: 'g-environs__liste' }, env.categories.map(function (c) {
+            return h('div', null, h('strong', null, c.libelle), h('ul', null, c.lieux.map(function (l) {
+              return h('li', null, (l.nom ? l.nom + ' (' + l.type + ')' : l.type) + ' : ' + E.texteDuree(l));
+            })));
+          }))) : null,
+        h('div', null, bouton('Actualiser', 'btn--light btn--sm', 'rafraichir', function () { chercherEnvirons(true); }))]
+        .forEach(function (el) { if (el) zoneEnvirons.appendChild(el); });   // append() écrirait « null »
+    }
+
+    // ---------- Phrase des atouts ----------
+    // « Parmi ses atouts : un jardin, une cheminée et une cave. », dans l'ordre du référentiel.
+    var DEBUT_PHRASE_ATOUTS = 'Parmi ses atouts : ';
+    function phraseAtouts() {
+      var coches = a.atouts || [];
+      var morceaux = R.atouts.filter(function (x) { return coches.indexOf(x[0]) >= 0; })
+        .map(function (x) { return R.phrasesAtouts[x[0]]; }).filter(Boolean);
+      if (!morceaux.length) return '';
+      var liste = morceaux.length === 1 ? morceaux[0] : morceaux.slice(0, -1).join(', ') + ' et ' + morceaux[morceaux.length - 1];
+      return DEBUT_PHRASE_ATOUTS + liste + '.';
+    }
+    // Ajoute la phrase en fin de description, ou remplace celle écrite la fois précédente.
+    function descriptionAvecAtouts(texte, phrase) {
+      var paragraphes = String(texte || '').replace(/\r\n?/g, '\n').split(/\n\s*\n/)
+        .filter(function (p) { return p.trim() && p.trim().indexOf(DEBUT_PHRASE_ATOUTS) !== 0; });
+      paragraphes.push(phrase);
+      return paragraphes.join('\n\n');
     }
 
     // ---------- Titre proposé ----------
@@ -864,15 +974,91 @@
     var corpsHonoraires = h('div', { class: 'g-grille' });
     var champMandat = saisie('numero_mandat', 'N° de mandat', { max: 40, placeholder: 'Ex. 2026-014',
       aide: 'Affiché aux acquéreurs comme « Référence de l\'annonce ». Obligatoire pour mettre en ligne.' });
+    // Ce que veut dire chaque option, en clair (Catherine : « ils n'ont pas le détail »).
+    function explicationHonoraires() {
+      var c = a.honoraires_charge;
+      var lignes = [];
+      if (c !== 'acquereur') lignes.push(h('p', null, h('strong', null, 'Vendeur : '),
+        'le prix affiché est celui que paie l\'acquéreur ; vos honoraires sont prélevés sur ce prix. L\'annonce indique « Honoraires à la charge du vendeur ».'));
+      if (c !== 'vendeur') lignes.push(h('p', null, h('strong', null, 'Acquéreur : '),
+        'le prix affiché comprend vos honoraires. Saisissez leur montant TTC (ou calculez-le à partir du prix net vendeur) : l\'annonce affiche aussi le prix hors honoraires et leur pourcentage, comme l\'exige la loi.'));
+      lignes.push(h('p', null, h('strong', null, 'Succession : '),
+        'les honoraires sont souvent à la charge de l\'acquéreur. Dans tous les cas, c\'est le mandat qui fait foi.'));
+      return h('div', { class: 'g-aide g-aide--honoraires' }, lignes);
+    }
+
+    // Calcul à partir du prix net vendeur, au taux du barème (ou un autre) : remplit le prix et les honoraires.
+    var netSaisi = null;
+    var tauxSaisi = String(R.baremeVente[0][0]);
+    var calculOuvert = false;
+    function calculateurBareme() {
+      var net = h('input', { class: 'g-input', type: 'text', inputmode: 'numeric', id: nouvelId(), placeholder: '450 000', autocomplete: 'off' });
+      if (netSaisi) net.value = formaterMilliers(netSaisi);
+      else if (a.prix_fai > 0 && a.honoraires_ttc > 0 && a.honoraires_ttc < a.prix_fai) net.value = formaterMilliers(a.prix_fai - a.honoraires_ttc);
+      var taux = h('input', { class: 'g-input', type: 'text', inputmode: 'decimal', id: nouvelId(), autocomplete: 'off' });
+      taux.value = tauxSaisi.replace('.', ',');
+      var resultat = h('p', { class: 'g-calcul', hidden: true });
+      var choix = h('div', { class: 'g-segments', role: 'group', 'aria-label': 'Taux du barème' });
+      function dessinerChoix() {
+        P.vider(choix);
+        R.baremeVente.forEach(function (x) {
+          choix.appendChild(h('button', { type: 'button', class: 'g-segment', 'aria-pressed': String(nombreDepuisSaisie(taux.value, true) === x[0]),
+            onclick: function () { taux.value = String(x[0]); tauxSaisi = taux.value; dessinerChoix(); apercu(); } }, x[0] + ' % ' + x[1].toLowerCase()));
+        });
+      }
+      function apercu() {
+        var n = nombreDepuisSaisie(net.value, false);
+        var t = nombreDepuisSaisie(taux.value, true);
+        if (!(n > 0) || !(t > 0) || t >= 50) { resultat.hidden = true; return null; }
+        var hon = Math.round(n * t / 100);
+        resultat.hidden = false;
+        resultat.textContent = 'Honoraires : ' + P.prix(hon) + ' TTC. Prix affiché : ' + P.prix(n + hon) + ' honoraires inclus.';
+        return { net: n, honoraires: hon };
+      }
+      net.addEventListener('input', apercu);
+      net.addEventListener('blur', function () { var n = nombreDepuisSaisie(net.value, false); if (n > 0) net.value = formaterMilliers(n); });
+      taux.addEventListener('input', function () { tauxSaisi = taux.value; dessinerChoix(); apercu(); });
+      var appliquer = bouton('Reporter dans l\'annonce', 'btn--solid btn--sm', 'coche', function () {
+        var r = apercu();
+        if (!r) { P.toast('Saisissez le prix net vendeur et le taux.', 'erreur'); return; }
+        netSaisi = r.net;
+        changer('prix_fai', r.net + r.honoraires);
+        changer('honoraires_ttc', r.honoraires);
+        var champPrix = page.querySelector('[data-champ="prix_fai"] input');
+        if (champPrix) champPrix.value = formaterMilliers(r.net + r.honoraires);
+        dessinerHonoraires();
+        P.toast('Prix et honoraires reportés' + (a.statut !== 'brouillon' ? ' : pensez à enregistrer.' : '.'));
+      });
+      dessinerChoix();
+      apercu();
+      var boite = h('details', { class: 'g-details' }, h('summary', null, 'Calculer à partir du prix net vendeur (barème)'),
+        h('div', { class: 'g-grille' },
+          h('div', { class: 'g-grille g-grille--2' },
+            h('div', { class: 'g-champ' }, h('label', { for: net.id }, 'Prix net vendeur'), h('div', { class: 'g-unite' }, net, h('span', null, '€'))),
+            h('div', { class: 'g-champ' }, h('label', { for: taux.id }, 'Taux des honoraires TTC'), h('div', { class: 'g-unite' }, taux, h('span', null, '%')), choix)),
+          resultat,
+          h('div', null, appliquer),
+          h('small', null, 'Barème Petra Gest des maisons et appartements : ' + R.baremeVente.map(function (x) {
+            return x[0] + ' % en ' + x[1].toLowerCase();
+          }).join(', ') + ', du prix net vendeur. Pour un autre type de bien, saisissez le taux du barème.')));
+      boite.open = calculOuvert;
+      boite.addEventListener('toggle', function () { calculOuvert = boite.open; });
+      return boite;
+    }
+
     function dessinerHonoraires() {
       P.vider(corpsHonoraires);
       corpsHonoraires.appendChild(h('div', { class: 'g-grille g-grille--2' }, champMandat));
       corpsHonoraires.appendChild(segments('honoraires_charge', 'Honoraires à la charge de', R.honorairesCharge, { apres: function () { dessinerHonoraires(); majCalcul(); } }));
+      corpsHonoraires.appendChild(explicationHonoraires());
       if (a.honoraires_charge === 'acquereur') {
         corpsHonoraires.appendChild(h('div', { class: 'g-grille g-grille--2' },
           saisie('honoraires_ttc', 'Montant des honoraires TTC', { type: 'prix', unite: '€', apres: majCalcul, aide: 'Compris dans le prix affiché.' })));
+        corpsHonoraires.appendChild(calculHonoraires);
+        corpsHonoraires.appendChild(calculateurBareme());
+      } else {
+        corpsHonoraires.appendChild(calculHonoraires);
       }
-      corpsHonoraires.appendChild(calculHonoraires);
       majCalcul();
       corpsHonoraires.appendChild(segments('copropriete', 'Le bien est-il en copropriété ?', [[true, 'Oui'], [false, 'Non']], { apres: dessinerHonoraires }));
       if (a.copropriete === true) {
@@ -1048,6 +1234,13 @@
         });
       };
       dessinerAtouts();
+      var boutonPhrase = h('button', { type: 'button', class: 'btn btn--light btn--sm', onclick: function () {
+        var phrase = phraseAtouts();
+        if (!phrase) { P.toast('Cochez d\'abord les atouts du bien.', 'erreur'); return; }
+        description.value = descriptionAvecAtouts(description.value, phrase);
+        changer('description', description.value);
+        P.toast('Phrase ajoutée à la fin de la description : relisez-la.');
+      } }, P.icone('crayon'), 'Écrire la phrase des atouts');
 
       var editeurEl = h('div', { class: 'g-editeur' },
         zoneManquants,
@@ -1066,7 +1259,9 @@
         section(4, 'Description et atouts', null, [
           zone('description', h('div', { class: 'g-champ' }, h('label', { for: description.id }, 'Description'), description,
             h('small', null, 'Conseil maison : pas de tiret long, et on dit ce que le bien offre plutôt que ce que les autres n\'offrent pas.'))),
-          h('div', { class: 'g-champ' }, h('span', { class: 'g-label' }, 'Atouts (cochez ceux qui s\'appliquent)'), atouts)], 'description'),
+          h('div', { class: 'g-champ' }, h('span', { class: 'g-label' }, 'Atouts et équipements (cochez ceux qui s\'appliquent)'), atouts,
+            h('div', null, boutonPhrase),
+            h('small', null, 'Le bouton ajoute à la fin de la description une phrase qui reprend les cases cochées ; relancé, il la remplace.'))], 'description'),
         section(5, 'Performance énergétique', 'Informations reprises du diagnostic (DPE).', corpsEnergie, 'energie'),
         section(6, 'Mandat, honoraires et copropriété', 'Mentions obligatoires sur toute annonce de vente.', corpsHonoraires, 'honoraires'),
         h('section', { class: 'g-section' },
@@ -1118,6 +1313,7 @@
     }
     derniereSauvegarde = a.modifie_le ? new Date(a.modifie_le) : null;
     redessiner();
+    verifierEnvirons();
   }
 
   // =====================================================================

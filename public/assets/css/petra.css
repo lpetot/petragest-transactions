@@ -348,6 +348,28 @@ strong{font-weight:700}
 .carte__credit{position:absolute;right:0;bottom:0;background:rgba(255,255,255,.85);font-size:.66rem;padding:.15rem .45rem;color:var(--slate)}
 .carte__legende{margin-top:.7rem;font-size:.84rem;color:var(--slate);display:flex;gap:.5rem;align-items:flex-start}
 .carte__legende svg{width:15px;height:15px;color:var(--sand-deep);flex-shrink:0;margin-top:.2rem}
+.carte__lieu{position:absolute;width:24px;height:24px;margin:-12px 0 0 -12px;border-radius:50%;background:var(--sand);color:var(--navy-deep);border:2px solid var(--navy);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(0,0,0,.25);pointer-events:none}
+
+/* Découvrir les environs */
+.environs{margin-top:1.6rem}
+.environs h3{font-family:var(--ff-display);font-weight:400;font-size:1.25rem;color:var(--navy-deep)}
+.environs__onglets{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.9rem}
+.environs__onglet{font:inherit;font-size:.82rem;font-weight:600;padding:.5rem .9rem;border:1px solid var(--navy-line);background:var(--white);color:var(--navy-deep);cursor:pointer}
+.environs__onglet:hover{border-color:var(--sand-deep)}
+.environs__onglet[aria-selected="true"]{background:var(--navy);border-color:var(--navy);color:var(--white)}
+.environs__liste{list-style:none;margin-top:.9rem;background:var(--white);border:1px solid var(--navy-line)}
+.environs__liste li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:.9rem;align-items:center;padding:.75rem 1.1rem}
+.environs__liste li + li{border-top:1px solid var(--navy-line)}
+.environs__num{width:24px;height:24px;border-radius:50%;background:var(--sand);color:var(--navy-deep);font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.environs__quoi strong{display:block;font-weight:600;color:var(--navy-deep);font-size:.92rem}
+.environs__quoi small{display:block;font-size:.78rem;color:var(--slate)}
+.environs__duree{font-size:.84rem;color:var(--navy-deep);white-space:nowrap;text-align:right}
+.environs__note{margin-top:.6rem;font-size:.76rem;color:var(--slate)}
+
+/* Les autres biens de l'agence */
+.autres-biens{margin-top:clamp(3rem,6vw,4.5rem);padding-top:clamp(2rem,4vw,3rem);border-top:1px solid var(--navy-line)}
+.autres-biens__tete{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1.6rem}
+.autres-biens__tete h2{font-family:var(--ff-display);font-weight:400;font-size:clamp(1.5rem,2.6vw,2rem);color:var(--navy-deep)}
 
 /* Colonne prix et contact */
 .aside{position:sticky;top:calc(var(--head-h) + 1.5rem);display:flex;flex-direction:column;gap:1rem}
@@ -448,6 +470,8 @@ strong{font-weight:700}
   .energie{grid-template-columns:minmax(0,1fr)}
   .foot-grid{grid-template-columns:minmax(0,1fr)}
   .carte{height:280px}
+  .environs__liste li{grid-template-columns:auto minmax(0,1fr);row-gap:.15rem}
+  .environs__duree{grid-column:2;text-align:left}
 }
 @media (max-width:420px){
   .mini-cards{gap:.6rem}

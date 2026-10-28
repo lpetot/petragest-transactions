@@ -37,6 +37,18 @@ npx vercel@latest deploy --prod
 Après le lot 1 : les annonces déjà en ligne restent visibles et modifiables sans n° de mandat, mais l'accueil de
 l'espace de gestion le réclame, comme le n° RSAC de l'interlocutrice (à renseigner dans `api/_lib/config.js`, `contact.rsac`).
 
+Lot 2 (`003_environs.sql`, « Découvrir les environs ») : après le déploiement, calculer les environs des annonces
+déjà en ligne (les nouvelles adresses le font seules depuis l'espace de gestion) :
+
+```
+node scripts/environs.js --env .env.production.local
+```
+
+Le script interroge OpenStreetMap (Overpass) une fois par adresse ; le service peut mettre une minute à répondre.
+Les serveurs Overpass sont autorisés dans la CSP (`connect-src` de `vercel.json`) : ne pas les retirer.
+Ne jamais laisser de sauvegarde (`sauvegardes/`) dans le dossier au moment de `vercel deploy` : il n'y a pas de
+`.vercelignore`.
+
 ## Accès sans code (`ACCES_LIBRE`)
 
 Depuis le 22/10/2026 (décision de Catherine et Laetitia, « pour l'instant ») : variable `ACCES_LIBRE` = `1` sur le
