@@ -46,6 +46,10 @@ node scripts/environs.js --env .env.production.local
 
 Le script interroge OpenStreetMap (Overpass) une fois par adresse ; le service peut mettre une minute à répondre.
 Les serveurs Overpass sont autorisés dans la CSP (`connect-src` de `vercel.json`) : ne pas les retirer.
+
+Lot 3 (`004_fiche.sql`, fiche technique, bon de visite, fiche de rentrée et fiche découverte) : rien à lancer après le
+déploiement, la colonne `fiche` est vide au départ. Le texte du bon de visite est dans `api/_lib/config.js`
+(`documents.bonDeVisite`) : modèle rédigé par MJ Data, à faire valider par Catherine.
 Ne jamais laisser de sauvegarde (`sauvegardes/`) dans le dossier au moment de `vercel deploy` : il n'y a pas de
 `.vercelignore`.
 

@@ -34,10 +34,10 @@ async function entretien() {
   }
   bilan.annonces_purgees = perimees.length;
 
-  // 2. Brouillons vides abandonnés (aucune saisie, aucune photo).
+  // 2. Brouillons vides abandonnés (aucune saisie, aucune photo, pas de fiche technique commencée).
   const vides = await db.requete(
     `delete from annonces a where a.statut = 'brouillon' and a.titre = '' and a.description = ''
-        and a.prix_fai is null and a.ville is null
+        and a.prix_fai is null and a.ville is null and a.fiche is null
         and not exists (select 1 from photos p where p.annonce_id = a.id)
         and a.modifie_le < now() - make_interval(days => $1::int) returning a.id`, [config.brouillonsVidesJours]);
   bilan.brouillons_vides_supprimes = vides.length;
@@ -64,6 +64,16 @@ async function entretien() {
         and coalesce(revoque_le, expire_le) < now() - make_interval(years => $1::int)
       returning id`, [config.anonymisationAnnees]);
   bilan.codes_anonymises = anonymises.length;
+
+  // 5 bis. Coordonnées des vendeurs (dossier interne de la fiche technique) : effacées quand le bien est vendu
+  // ou archivé depuis plus de 3 ans sans modification. Le reste de la fiche (pièces, bâtiment) est gardé.
+  const vendeurs = await db.requete(
+    `update annonces set fiche = nullif(fiche - 'vendeur_noms' - 'vendeur_adresse' - 'vendeur_tel' - 'vendeur_email', '{}'::jsonb)
+      where fiche ?| array['vendeur_noms', 'vendeur_adresse', 'vendeur_tel', 'vendeur_email']
+        and statut in ('vendue', 'archivee')
+        and modifie_le < now() - make_interval(years => $1::int)
+      returning id`, [config.anonymisationAnnees]);
+  bilan.vendeurs_effaces = vendeurs.length;
 
   // 6. Fichiers déposés mais rattachés à rien (envoi interrompu), plus de 24 h. Un DPE joint compte comme rattaché.
   const limite = Date.now() - 24 * 3600 * 1000;

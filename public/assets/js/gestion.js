@@ -278,8 +278,20 @@
       btnDeposer,
       h('a', { class: 'g-tuile', href: '#/codes/nouveau' }, h('span', { class: 'g-tuile__ico' }, P.icone('cle')), h('strong', null, "Créer un code d'accès"), h('span', null, 'Pour un acquéreur : à envoyer par SMS ou e-mail.')),
       h('a', { class: 'g-tuile g-tuile--claire', href: '#/annonces' }, h('span', { class: 'g-tuile__ico' }, P.icone('feuille')), h('strong', null, 'Mes annonces'), h('span', null, 'Modifier, mettre sous offre, marquer vendu.'))));
+    // Documents vierges : à imprimer pour un rendez-vous, avant même que l'annonce existe.
+    var vierge = function (doc, titre, texte) {
+      return h('a', { class: 'g-document', href: '/document?doc=' + doc, target: '_blank', rel: 'noopener' },
+        h('span', { class: 'g-document__ico' }, P.icone('imprimer')), h('strong', null, titre), h('span', null, texte));
+    };
+    var documentsVierges = (h('section', { class: 'g-carte g-documents' }, h('h2', null, 'Documents vierges à imprimer'),
+      h('p', { class: 'g-documents__aide' }, 'À remplir à la main lors d\'un rendez-vous. Pour un document prérempli, ouvrez l\'annonce : rubrique « Documents à imprimer ».'),
+      h('div', { class: 'g-documents__liste' },
+        vierge('decouverte', 'Fiche découverte', 'Rendez-vous d\'estimation chez le propriétaire.'),
+        vierge('interne', 'Fiche de rentrée', 'Prise de mandat : vendeur, bien, pièce par pièce.'),
+        vierge('visite', 'Bon de visite', 'À faire signer par le visiteur.'))));
     var zone = h('div', null, h('p', { class: 'g-chargement' }, 'Chargement...'));
     page.appendChild(zone);
+    page.appendChild(documentsVierges);
     api('activite').then(function (r) {
       var c = r.chiffres;
       P.vider(zone);
@@ -1094,6 +1106,8 @@
       if (st !== 'archivee') ajouter('Archiver', 'feuille', function () { changerStatut('archivee', 'Annonce archivée.'); });
       ajouter('Voir comme un acquéreur', 'oeil', function () { enregistrer().then(function () { window.open('/bien?id=' + a.id, '_blank', 'noopener'); }); });
       ajouter('Copier le lien de ce bien', 'copier', function () { copier(location.origin + '/bien?id=' + a.id); });
+      ajouter('Imprimer la fiche technique', 'imprimer', function () { ouvrirDocument('fiche'); });
+      ajouter('Imprimer un bon de visite', 'imprimer', function () { ouvrirDocument('visite'); });
       ajouter('Dupliquer (sans les photos)', 'copier', dupliquer);
       ajouter('Mettre à la corbeille', 'corbeille', corbeille, true);
       var declencheur = bouton('Plus d\'actions', 'btn--light', 'menu', function (e) {
@@ -1186,6 +1200,318 @@
       });
     }
     function recharger() { api('annonces/' + a.id).then(function (r) { Object.assign(a, r.annonce); redessiner(); }).catch(signaler); }
+
+    // ---------- 8 et 9. Fiche technique et dossier interne (lot 3) ----------
+    // Tout tient dans le seul champ « fiche » (JSON, validé par api/_lib/fiche.js). Chaque modification envoie
+    // une copie neuve : un objet modifié sur place pendant un enregistrement ferait perdre la dernière saisie.
+    function ficheCopie() { return JSON.parse(JSON.stringify(a.fiche || {})); }
+    function videVal(v) { return v === null || v === undefined || v === '' || (Array.isArray(v) && !v.length); }
+    function ficheMaj(cle, valeur) {
+      var f = ficheCopie();
+      if (videVal(valeur)) delete f[cle]; else f[cle] = valeur;
+      changer('fiche', Object.keys(f).length ? f : null);
+    }
+    function fv(cle) { return a.fiche ? a.fiche[cle] : undefined; }
+
+    function fSaisie(cle, libelle, o) {
+      o = o || {};
+      var id = nouvelId();
+      var el;
+      if (o.lignes) {
+        el = h('textarea', { class: 'g-textarea g-textarea--court', id: id, maxlength: o.max ? String(o.max) : null, placeholder: o.placeholder || '' });
+      } else {
+        el = h('input', { class: 'g-input', id: id, type: o.type === 'date' ? 'date' : o.type === 'email' ? 'email' : o.type === 'tel' ? 'tel' : 'text',
+          inputmode: o.type === 'entier' ? 'numeric' : null, maxlength: o.max ? String(o.max) : null,
+          placeholder: o.placeholder || '', autocomplete: 'off', list: o.suggestions ? id + '-l' : null });
+      }
+      var v = fv(cle);
+      el.value = videVal(v) ? '' : o.type === 'entier' ? formaterMilliers(v) : String(v);
+      el.addEventListener('input', function () {
+        if (o.type !== 'entier') { ficheMaj(cle, el.value); return; }
+        var n = nombreDepuisSaisie(el.value, false);
+        el.classList.toggle('is-invalide', Number.isNaN(n));
+        if (!Number.isNaN(n)) ficheMaj(cle, n === null ? null : Math.round(n));
+      });
+      var controle = o.unite ? h('div', { class: 'g-unite' }, el, h('span', null, o.unite)) : el;
+      return h('div', { class: 'g-champ' + (o.large ? ' g-champ--large' : '') }, h('label', { for: id }, libelle), controle,
+        o.suggestions ? h('datalist', { id: id + '-l' }, o.suggestions.map(function (s) { return h('option', { value: s }); })) : null,
+        o.aide ? h('small', null, o.aide) : null);
+    }
+    function fChoix(cle, libelle, options) {
+      var id = nouvelId();
+      var sel = h('select', { class: 'g-select', id: id }, h('option', { value: '' }, 'Non précisé'),
+        options.map(function (x) { return h('option', { value: x[0] }, x[1]); }));
+      sel.value = fv(cle) || '';
+      sel.addEventListener('change', function () { ficheMaj(cle, sel.value || null); });
+      return h('div', { class: 'g-champ' }, h('label', { for: id }, libelle), sel);
+    }
+    // Oui / Non ; un second clic sur le choix actif le retire (« non précisé »).
+    function fOuiNon(cle, libelle, apres) {
+      var groupe = h('div', { class: 'g-segments', role: 'group', 'aria-label': libelle });
+      var dessiner = function () {
+        P.vider(groupe);
+        [[true, 'Oui'], [false, 'Non']].forEach(function (x) {
+          groupe.appendChild(h('button', { type: 'button', class: 'g-segment', 'aria-pressed': String(fv(cle) === x[0]),
+            onclick: function () { ficheMaj(cle, fv(cle) === x[0] ? null : x[0]); dessiner(); if (apres) apres(); } }, x[1]));
+        });
+      };
+      dessiner();
+      return h('div', { class: 'g-champ' }, h('span', { class: 'g-label' }, libelle), groupe);
+    }
+    function fCases(cle, libelle, options) {
+      var groupe = h('div', { class: 'g-atouts', role: 'group', 'aria-label': libelle });
+      var dessiner = function () {
+        P.vider(groupe);
+        options.forEach(function (x) {
+          var actif = (fv(cle) || []).indexOf(x[0]) >= 0;
+          groupe.appendChild(h('button', { type: 'button', class: 'g-atout', 'aria-pressed': String(actif), onclick: function () {
+            var l = (fv(cle) || []).slice();
+            if (actif) l = l.filter(function (y) { return y !== x[0]; }); else l.push(x[0]);
+            ficheMaj(cle, l); dessiner();
+          } }, P.icone('coche'), x[1]));
+        });
+      };
+      dessiner();
+      return h('div', { class: 'g-champ' }, h('span', { class: 'g-label' }, libelle), groupe);
+    }
+    function sousTitre(texte, aide) {
+      return h('div', { class: 'g-fiche__titre' }, h('h3', null, texte), aide ? h('p', null, aide) : null);
+    }
+
+    // Pièce par pièce
+    var zonePieces = h('div', { class: 'g-pieces' });
+    var totalPieces = h('p', { class: 'g-pieces__total', 'aria-live': 'polite' });
+    function pieces() { return a.fiche && Array.isArray(a.fiche.pieces) ? a.fiche.pieces : []; }
+    function piecesCopie() { return JSON.parse(JSON.stringify(pieces())); }
+    function majPieces(liste, redessinerListe) {
+      ficheMaj('pieces', liste);
+      if (redessinerListe) dessinerPieces(); else majTotal();
+    }
+    // « Chambre 1 », « Chambre 2 »... ; les autres pièces ne sont numérotées qu'à partir de la deuxième.
+    function nomParDefaut(type, liste) {
+      var lib = R.pieceDe(type)[1];
+      var deja = liste.filter(function (p) { return p.type === type; }).length;
+      if (type === 'chambre') return lib + ' ' + (deja + 1);
+      return deja ? lib + ' ' + (deja + 1) : lib;
+    }
+    function ajouterPiece(type) {
+      var l = piecesCopie();
+      if (l.length >= 60) { P.toast('60 pièces au maximum.', 'erreur'); return; }
+      l.push({ type: type, nom: nomParDefaut(type, l) });
+      majPieces(l, true);
+      var champs = zonePieces.querySelectorAll('.g-piece');
+      var derniere = champs[champs.length - 1];
+      if (derniere) { derniere.scrollIntoView({ block: 'nearest' }); var s = derniere.querySelector('[data-surface]'); if (s) s.focus(); }
+    }
+    // Liste de départ tirée de l'essentiel : entrée, séjour, cuisine, chambres, salles de bains, WC.
+    function preparerPieces() {
+      var l = [];
+      var ajout = function (t) { l.push({ type: t, nom: nomParDefaut(t, l) }); };
+      ['entree', 'sejour', 'cuisine'].forEach(ajout);
+      for (var i = 0; i < Math.min(a.nb_chambres || 0, 12); i++) ajout('chambre');
+      for (var j = 0; j < Math.max(1, Math.min(a.nb_sdb || 1, 6)); j++) ajout(j === 0 ? 'salle_bains' : 'salle_eau');
+      ajout('wc');
+      majPieces(l, true);
+      P.toast('Liste préparée : renseignez les surfaces, et retirez ou ajoutez des pièces au besoin.');
+    }
+    function cartePiece(p, i, total) {
+      var def = R.pieceDe(p.type) || ['autre', 'Pièce', true, ''];
+      function maj(cle, valeur, redessiner) {
+        var l = piecesCopie();
+        if (!l[i]) return;
+        if (videVal(valeur)) delete l[i][cle]; else l[i][cle] = valeur;
+        majPieces(l, redessiner);
+      }
+      var idNom = nouvelId(), idSurf = nouvelId(), idNiv = nouvelId(), idSol = nouvelId(), idCom = nouvelId();
+      var nom = h('input', { class: 'g-input', id: idNom, maxlength: '60', autocomplete: 'off' });
+      nom.value = p.nom || def[1];
+      nom.addEventListener('input', function () { maj('nom', nom.value); });
+      var surface = h('input', { class: 'g-input', id: idSurf, inputmode: 'decimal', autocomplete: 'off', 'data-surface': '' });
+      surface.value = p.surface ? String(p.surface).replace('.', ',') : '';
+      surface.addEventListener('input', function () {
+        var n = nombreDepuisSaisie(surface.value, true);
+        surface.classList.toggle('is-invalide', Number.isNaN(n));
+        if (!Number.isNaN(n)) maj('surface', n);
+      });
+      var niveau = h('select', { class: 'g-select', id: idNiv }, h('option', { value: '' }, 'Non précisé'),
+        R.niveaux.map(function (x) { return h('option', { value: x[0] }, x[1]); }));
+      niveau.value = p.niveau || '';
+      niveau.addEventListener('change', function () { maj('niveau', niveau.value || null); });
+      var sol = h('select', { class: 'g-select', id: idSol }, h('option', { value: '' }, 'Non précisé'),
+        R.sols.map(function (x) { return h('option', { value: x[0] }, x[1]); }));
+      sol.value = p.sol || '';
+      sol.addEventListener('change', function () { maj('sol', sol.value || null); });
+
+      // Petits groupes à bascule (exposition, détails) : redessinés sur place, sans perdre la saisie voisine.
+      function bascules(cle, options, classe) {
+        var groupe = h('div', { class: classe, role: 'group' });
+        var dessiner = function () {
+          P.vider(groupe);
+          var actuels = (piecesCopie()[i] || {})[cle] || [];
+          options.forEach(function (x) {
+            var actif = actuels.indexOf(x[0]) >= 0;
+            groupe.appendChild(h('button', { type: 'button', class: classe === 'g-orient' ? 'g-orient__btn' : 'g-atout g-atout--petit',
+              'aria-pressed': String(actif), 'aria-label': classe === 'g-orient' ? x[1] : null, title: classe === 'g-orient' ? x[1] : null,
+              onclick: function () {
+                var l = actif ? actuels.filter(function (y) { return y !== x[0]; }) : actuels.concat([x[0]]);
+                maj(cle, l); dessiner();
+              } }, classe === 'g-orient' ? x[0] : [P.icone('coche'), x[1]]));
+          });
+        };
+        dessiner();
+        return groupe;
+      }
+      var orient = bascules('orientations', R.orientations, 'g-orient');
+      var details = R.detailsPour(p.type);
+      var commentaire = h('input', { class: 'g-input', id: idCom, maxlength: '300', autocomplete: 'off',
+        placeholder: 'Ex. : moulures au plafond, cheminée en marbre, vue sur le jardin' });
+      commentaire.value = p.commentaire || '';
+      commentaire.addEventListener('input', function () { maj('commentaire', commentaire.value); });
+
+      var deplacer = function (sens) {
+        var l = piecesCopie();
+        var j = i + sens;
+        if (j < 0 || j >= l.length) return;
+        var x = l[i]; l[i] = l[j]; l[j] = x;
+        majPieces(l, true);
+      };
+      var outils = h('div', { class: 'g-piece__outils' },
+        h('button', { type: 'button', class: 'g-icone-btn', 'aria-label': 'Monter ' + nom.value, title: 'Monter', disabled: i === 0, onclick: function () { deplacer(-1); } }, P.icone('haut')),
+        h('button', { type: 'button', class: 'g-icone-btn', 'aria-label': 'Descendre ' + nom.value, title: 'Descendre', disabled: i === total - 1, onclick: function () { deplacer(1); } }, P.icone('bas')),
+        h('button', { type: 'button', class: 'g-icone-btn g-icone-btn--danger', 'aria-label': 'Retirer ' + nom.value, title: 'Retirer cette pièce', onclick: function () {
+          var l = piecesCopie(); l.splice(i, 1); majPieces(l, true);
+        } }, P.icone('corbeille')));
+
+      return h('div', { class: 'g-piece' + (def[2] ? '' : ' g-piece--annexe') },
+        h('div', { class: 'g-piece__tete' },
+          h('span', { class: 'g-piece__num' }, String(i + 1)),
+          h('div', { class: 'g-champ g-piece__nom' }, h('label', { for: idNom, class: 'sr-only' }, 'Nom de la pièce'), nom,
+            h('small', null, def[1] + (def[2] ? '' : ' : hors surface habitable'))),
+          outils),
+        h('div', { class: 'g-piece__grille' },
+          h('div', { class: 'g-champ' }, h('label', { for: idSurf }, 'Surface'), h('div', { class: 'g-unite' }, surface, h('span', null, 'm²'))),
+          h('div', { class: 'g-champ' }, h('label', { for: idNiv }, 'Niveau'), niveau),
+          h('div', { class: 'g-champ' }, h('label', { for: idSol }, 'Sol'), sol),
+          h('div', { class: 'g-champ' }, h('span', { class: 'g-label' }, 'Exposition'), orient)),
+        details.length ? bascules('details', details, 'g-atouts g-atouts--petits') : null,
+        h('div', { class: 'g-champ' }, h('label', { for: idCom }, 'Remarques'), commentaire));
+    }
+    function dessinerPieces() {
+      P.vider(zonePieces);
+      var l = pieces();
+      if (!l.length) {
+        zonePieces.appendChild(h('div', { class: 'g-pieces__vide' },
+          h('p', null, 'Aucune pièce pour l\'instant. Ajoutez-les une à une, ou partez de l\'essentiel de l\'annonce.'),
+          h('button', { type: 'button', class: 'btn btn--light btn--sm', onclick: preparerPieces }, P.icone('pieces'),
+            'Préparer la liste (' + P.pluriel(a.nb_chambres || 0, 'chambre', 'chambres') + ')')));
+      }
+      l.forEach(function (p, i) { zonePieces.appendChild(cartePiece(p, i, l.length)); });
+      majTotal();
+    }
+    function majTotal() {
+      var t = 0, n = 0;
+      pieces().forEach(function (p) { var d = R.pieceDe(p.type); if (d && d[2] && p.surface > 0) { t += p.surface; n += 1; } });
+      P.vider(totalPieces);
+      if (!n) return;
+      totalPieces.append(h('strong', null, 'Total des pièces habitables : ' + P.surface(Math.round(t * 100) / 100)),
+        a.surface_habitable ? ' (surface habitable de l\'annonce : ' + P.surface(a.surface_habitable) + ')' : '',
+        h('small', null, 'Hors balcon, terrasse, jardin, cave, garage, combles et véranda. Indicatif : la surface officielle reste celle du diagnostic.'));
+    }
+    var ajoutPieces = h('div', { class: 'g-champ g-pieces__ajout' }, h('span', { class: 'g-label' }, 'Ajouter une pièce'),
+      h('div', { class: 'g-atouts' }, R.pieces.map(function (p) {
+        return h('button', { type: 'button', class: 'g-atout g-atout--ajout', onclick: function () { ajouterPiece(p[0]); } }, P.icone('plus'), p[1]);
+      })));
+
+    // Situation locative : les champs du bail n'apparaissent que si le bien est loué.
+    var zoneBail = h('div');
+    function dessinerBail() {
+      P.vider(zoneBail);
+      if (fv('loue') !== true) return;
+      zoneBail.appendChild(h('div', { class: 'g-grille g-grille--2' },
+        fChoix('bail_type', 'Type de bail', R.typesBail),
+        fSaisie('loyer_hc', 'Loyer mensuel hors charges', { type: 'entier', unite: '€' }),
+        fSaisie('bail_debut', 'Entrée du locataire', { type: 'date' }),
+        fSaisie('bail_fin', 'Fin de bail prévue', { type: 'date' })));
+    }
+
+    function corpsFiche() {
+      dessinerPieces();
+      dessinerBail();
+      return [
+        sousTitre('Pièce par pièce', 'Surface, exposition, sol et détails de chaque pièce : ils figurent sur la fiche technique remise lors des visites, jamais sur l\'annonce.'),
+        zonePieces, totalPieces, ajoutPieces,
+        sousTitre('Le bâtiment et le confort'),
+        h('div', { class: 'g-grille g-grille--3' },
+          fSaisie('construction', 'Type de construction', { max: 120, suggestions: ['Pierre de taille', 'Moellons', 'Brique', 'Parpaing', 'Béton', 'Ossature bois', 'Pan de bois'] }),
+          fSaisie('facade', 'Façade', { max: 120, placeholder: 'Ex. : pierre, ravalée en 2019' }),
+          fSaisie('toiture', 'Toiture', { max: 120, placeholder: 'Ex. : ardoise, refaite en 2015' }),
+          fChoix('mitoyennete', 'Mitoyenneté', R.mitoyennetes),
+          fChoix('vitrage', 'Vitrage', R.vitrages),
+          fChoix('menuiseries', 'Menuiseries', R.menuiseries),
+          fChoix('assainissement', 'Assainissement', R.assainissements)),
+        h('div', { class: 'g-grille g-grille--2' },
+          fOuiNon('lotissement', 'En lotissement'),
+          fOuiNon('frais_notaire_reduits', 'Frais de notaire réduits (bien de moins de 5 ans)')),
+        fCases('equipements', 'Équipements (en plus des atouts de l\'annonce)', R.equipementsFiche),
+        sousTitre('Travaux, cadastre et syndic'),
+        h('div', { class: 'g-grille g-grille--2' },
+          fSaisie('travaux_realises', 'Travaux réalisés', { lignes: true, max: 1000, placeholder: 'Nature et année : toiture 2015, électricité 2021...' }),
+          fSaisie('travaux_a_prevoir', 'Travaux à prévoir', { lignes: true, max: 1000 })),
+        h('div', { class: 'g-grille g-grille--2' },
+          fOuiNon('garantie_decennale', 'Garantie décennale en cours'),
+          fSaisie('cadastre', 'Références cadastrales ou n° de lot', { max: 200, placeholder: 'Ex. : section AB n° 123, lot 417' })),
+        h('div', { class: 'g-grille g-grille--3' },
+          fChoix('syndic_type', 'Syndic (copropriété)', R.syndics),
+          fSaisie('syndic_nom', 'Nom du syndic', { max: 120 }),
+          fSaisie('syndic_tel', 'Téléphone du syndic', { type: 'tel', max: 40 })),
+        fSaisie('travaux_votes', 'Travaux votés en assemblée générale (copropriété)', { lignes: true, max: 1000 }),
+        sousTitre('Situation locative'),
+        fOuiNon('loue', 'Le bien est-il loué ?', dessinerBail),
+        zoneBail,
+      ];
+    }
+
+    function corpsDossierInterne() {
+      return [
+        h('div', { class: 'message message--info' }, P.icone('cadenas'),
+          h('span', null, 'Ces informations ne figurent que sur la fiche de rentrée (dossier interne). Elles ne sont jamais montrées aux acquéreurs, ni sur l\'annonce, ni sur la fiche technique.')),
+        h('div', { class: 'g-grille g-grille--3' },
+          fChoix('mandat_type', 'Type de mandat', R.typesMandat),
+          fSaisie('mandat_date', 'Date du mandat', { type: 'date' }),
+          fSaisie('apporteur', 'Apporteur', { max: 120 })),
+        sousTitre('Vendeur'),
+        h('div', { class: 'g-grille g-grille--2' },
+          fSaisie('vendeur_noms', 'Nom(s) et prénom(s)', { max: 200 }),
+          fSaisie('vendeur_adresse', 'Adresse', { max: 300 }),
+          fSaisie('vendeur_tel', 'Téléphone', { type: 'tel', max: 60 }),
+          fSaisie('vendeur_email', 'E-mail', { type: 'email', max: 160 })),
+        h('div', { class: 'g-grille g-grille--2' },
+          fSaisie('notaire', 'Notaire du vendeur', { max: 200 }),
+          fSaisie('visites', 'Organisation des visites', { lignes: true, max: 1000, placeholder: 'Clés, disponibilités, personne à prévenir...' })),
+        sousTitre('Votre avis', 'Les commentaires du conseiller reprennent la note interne (rubrique 7).'),
+        h('div', { class: 'g-grille g-grille--2' },
+          fSaisie('plus', 'Les plus', { lignes: true, max: 1500 }),
+          fSaisie('moins', 'Les moins', { lignes: true, max: 1500 })),
+      ];
+    }
+
+    // Documents imprimables : enregistre d'abord, puis ouvre la page du document dans un nouvel onglet.
+    function ouvrirDocument(doc) {
+      enregistrer().then(function () { window.open('/document?doc=' + doc + '&annonce=' + a.id, '_blank', 'noopener'); });
+    }
+    function carteDocuments() {
+      var item = function (doc, titre, texte) {
+        return h('button', { type: 'button', class: 'g-document', onclick: function () { ouvrirDocument(doc); } },
+          h('span', { class: 'g-document__ico' }, P.icone('imprimer')), h('strong', null, titre), h('span', null, texte));
+      };
+      return h('section', { class: 'g-carte g-documents' }, h('h2', null, 'Documents à imprimer'),
+        h('p', { class: 'g-documents__aide' }, 'Ils reprennent l\'annonce et la fiche technique. Dans la fenêtre d\'impression, choisissez « Enregistrer au format PDF » pour obtenir le fichier.'),
+        h('div', { class: 'g-documents__liste' },
+          item('fiche', 'Fiche technique', 'À remettre lors d\'une visite : photos, pièce par pièce, DPE, environs.'),
+          item('visite', 'Bon de visite', 'Prérempli avec ce bien, à faire signer par le visiteur.'),
+          item('interne', 'Fiche de rentrée', 'Dossier interne complet : vendeur, mandat, plus et moins. Ne pas remettre.'),
+          item('decouverte', 'Fiche découverte', 'Questionnaire du rendez-vous d\'estimation, prérempli avec ce bien.')));
+    }
 
     // ---------- Construction ----------
     function redessiner() {
@@ -1294,6 +1620,17 @@
                   t.addEventListener('input', function () { changer('note_interne', t.value); });
                   return h('div', { class: 'g-champ' }, h('label', { for: t.id }, 'Note interne'), t, h('small', null, 'Jamais visible des acquéreurs.'));
                 })()))))),
+        h('section', { class: 'g-section' },
+          h('details', { class: 'g-details g-details--section', 'data-section': 'fiche' },
+            h('summary', { class: 'g-section__tete' }, h('span', { class: 'g-section__num' }, '8'), h('div', null, h('h2', null, 'Fiche technique'),
+              h('p', null, 'Pièce par pièce, bâtiment, travaux : pour la fiche remise en visite. Rien n\'apparaît sur l\'annonce.'))),
+            h('div', { class: 'g-section__corps g-fiche' }, corpsFiche()))),
+        h('section', { class: 'g-section' },
+          h('details', { class: 'g-details g-details--section' },
+            h('summary', { class: 'g-section__tete' }, h('span', { class: 'g-section__num' }, '9'), h('div', null, h('h2', null, 'Dossier interne'),
+              h('p', null, 'Vendeur, mandat, plus et moins : jamais remis à l\'acquéreur.'))),
+            h('div', { class: 'g-section__corps g-fiche' }, corpsDossierInterne()))),
+        carteDocuments(),
         visiteurs && visiteurs.length ? h('section', { class: 'g-carte' }, h('h2', null, 'Qui a consulté ce bien ?'),
           h('ul', { class: 'g-activite' }, visiteurs.map(function (v) {
             return h('li', null, h('span', { class: 'g-activite__ico' }, P.icone('personne')),

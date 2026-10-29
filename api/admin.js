@@ -6,6 +6,7 @@ const crypto = require('node:crypto');
 const db = require('./_lib/db');
 const config = require('./_lib/config');
 const A = require('./_lib/annonces');
+const F = require('./_lib/fiche');
 const codes = require('./_lib/codes');
 const stockage = require('./_lib/stockage');
 const fichiers = require('./_lib/fichiers');
@@ -297,8 +298,10 @@ async function annonceModifier(req, res, m, admin) {
     const sets = [];
     const params = [];
     for (const col of colonnes) {
-      params.push(col === 'atouts' ? JSON.stringify(maj[col]) : maj[col]);
-      sets.push(col === 'atouts' ? `${col} = $${params.length}::jsonb` : `${col} = $${params.length}`);
+      const json = col === 'atouts' || col === 'fiche';
+      // Une fiche vidée devient un vrai NULL (et non le JSON « null »).
+      params.push(json ? (maj[col] === null ? null : JSON.stringify(maj[col])) : maj[col]);
+      sets.push(json ? `${col} = $${params.length}::jsonb` : `${col} = $${params.length}`);
     }
     params.push(admin.id, a.id);
     await db.requete(
@@ -339,14 +342,16 @@ async function annonceRestaurer(req, res, m) {
 
 // Duplique les champs seulement, jamais les photos ni le DPE joint : supprimer la copie ne peut pas
 // effacer les fichiers de l'original. Le n° de mandat n'est pas recopié : un autre bien a son propre mandat.
+// La fiche technique est recopiée sans le vendeur, le mandat, le cadastre ni la location (fiche.js).
 async function annonceDupliquer(req, res, m, admin) {
   const a = await trouverAnnonce(m[1]);
-  const cols = Object.keys(A.CHAMPS).filter((c) => c !== 'titre' && c !== 'numero_mandat').concat(['lat_pub', 'lng_pub']);
+  const cols = Object.keys(A.CHAMPS).filter((c) => !['titre', 'numero_mandat', 'fiche'].includes(c)).concat(['lat_pub', 'lng_pub']);
+  const fiche = F.pourDuplication(a.fiche);
   const copie = await db.une(
-    `insert into annonces (pub_id, statut, cree_par, modifie_par, titre, ${cols.join(', ')})
-     select $1, 'brouillon', $2, $2, left(titre || ' (copie)', 140), ${cols.join(', ')}
+    `insert into annonces (pub_id, statut, cree_par, modifie_par, titre, fiche, ${cols.join(', ')})
+     select $1, 'brouillon', $2, $2, left(titre || ' (copie)', 140), $4::jsonb, ${cols.join(', ')}
        from annonces where id = $3 returning *`,
-    [await nouvelIdentifiant(), admin.id, a.id]);
+    [await nouvelIdentifiant(), admin.id, a.id, fiche ? JSON.stringify(fiche) : null]);
   h.envoyerJson(res, 201, { annonce: versAnnonceAdmin(copie, []) });
 }
 
@@ -745,6 +750,28 @@ async function activite(req, res) {
 // Aiguillage
 // =====================================================================
 const ID = '([a-z0-9]{10})';
+// =====================================================================
+// Documents imprimables (lot 3) : fiche technique remise en visite, dossier interne, bon de visite,
+// fiche découverte. La page /document les met en forme ; « Enregistrer au format PDF » se fait à l'impression.
+// Sans paramètre « annonce », les documents sont vierges (à remplir à la main).
+// =====================================================================
+async function documentsLire(req, res, _m, admin) {
+  const pubId = h.parametres(req).get('annonce');
+  let annonce = null;
+  if (pubId) {
+    if (!/^[a-z0-9]{10}$/.test(pubId)) throw new E(404, 'introuvable', 'Annonce introuvable.');
+    const a = await trouverAnnonce(pubId);
+    annonce = versAnnonceAdmin(a, await photosDe(a.id));
+  }
+  h.envoyerJson(res, 200, {
+    agence: config.agence,
+    contact: A.contactPublic(),
+    textes: config.documents,
+    conseiller: admin.nom,
+    annonce,
+  });
+}
+
 const ROUTES = [
   ['POST', /^session$/, connexion, { public: true }],
   ['GET', /^session$/, moi, { mdp: true }],
@@ -775,6 +802,7 @@ const ROUTES = [
   ['PATCH', /^codes\/(\d{1,9})$/, codeModifier],
   ['DELETE', /^codes\/(\d{1,9})$/, codeSupprimer],
   ['GET', /^activite$/, activite],
+  ['GET', /^documents$/, documentsLire],
 ];
 
 function chemin(req) {

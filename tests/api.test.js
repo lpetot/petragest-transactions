@@ -508,3 +508,73 @@ test('environs : enregistrés pour la position actuelle seulement, visibles sur 
   bien = (await v.appel('GET', '/api/biens?id=' + id)).json.bien;
   assert.equal(bien.localisation.environs, null);
 });
+
+test('fiche technique : enregistrée, jamais montrée aux acquéreurs, servie aux documents, recopiée sans le dossier interne', async () => {
+  const s = session(); await connecterAdmin(s);
+  const id = await annonceEnLigne(s, {});
+  assert.equal((await s.appel('PATCH', `/api/admin/annonces/${id}`, { statut: 'publiee' })).statut, 200);
+  const fiche = {
+    pieces: [{ type: 'sejour', nom: 'Séjour', surface: 32.5, orientations: ['S'], sol: 'parquet', details: ['cheminee'] },
+      { type: 'cuisine', surface: 11, details: ['equipee'] }],
+    facade: 'Pierre', cadastre: 'Lot 417', mandat_type: 'exclusif',
+    vendeur_noms: 'VENDEUR-SECRET', vendeur_email: 'vendeur@exemple.fr', plus: 'PLUS-SECRET', moins: 'MOINS-SECRET',
+  };
+  let r = await s.appel('PATCH', `/api/admin/annonces/${id}`, { fiche });
+  assert.equal(r.statut, 200, JSON.stringify(r.json));
+  assert.equal(r.json.annonce.fiche.pieces.length, 2);
+  assert.equal(r.json.annonce.fiche.vendeur_noms, 'VENDEUR-SECRET');
+  r = await s.appel('PATCH', `/api/admin/annonces/${id}`, { fiche: { pieces: [{ type: 'salon', surface: 'beaucoup' }] } });
+  assert.equal(r.statut, 422); assert.match(r.json.champs.fiche, /Pièce 1/);
+
+  // Côté acquéreur : rien de la fiche, ni dans la fiche du bien ni dans le catalogue.
+  const v = session(); await v.appel('POST', '/api/acces', { code: 'PETRAGEST26X' });
+  const vus = JSON.stringify((await v.appel('GET', '/api/biens?id=' + id)).json) + JSON.stringify((await v.appel('GET', '/api/biens')).json);
+  for (const secret of ['VENDEUR-SECRET', 'PLUS-SECRET', 'MOINS-SECRET', 'Lot 417', 'vendeur@exemple.fr']) {
+    assert.equal(vus.includes(secret), false, `${secret} visible des acquéreurs`);
+  }
+
+  // Documents : réservés à l'équipe ; l'annonce y est complète, avec l'agence et l'interlocutrice.
+  assert.equal((await v.appel('GET', '/api/admin/documents?annonce=' + id)).statut, 401);
+  r = await s.appel('GET', '/api/admin/documents?annonce=' + id);
+  assert.equal(r.statut, 200);
+  assert.equal(r.json.annonce.fiche.plus, 'PLUS-SECRET');
+  assert.equal(r.json.agence.nom, 'Petra Gest');
+  assert.match(r.json.contact.rsac, /^RSAC de /);
+  assert.ok(r.json.textes.bonDeVisite.length >= 3);
+  r = await s.appel('GET', '/api/admin/documents');
+  assert.equal(r.statut, 200); assert.equal(r.json.annonce, null);
+  assert.equal((await s.appel('GET', '/api/admin/documents?annonce=../../x')).statut, 404);
+  assert.equal((await s.appel('GET', '/api/admin/documents?annonce=zzzzzzzzzz')).statut, 404);
+  const page = await fetch(base + '/document');
+  assert.equal(page.status, 200);
+  assert.equal(page.headers.get('x-robots-tag'), 'noindex, nofollow');
+
+  // « Dupliquer » : pièces et bâtiment repris, mais ni vendeur, ni mandat, ni lot cadastral.
+  const copie = (await s.appel('POST', `/api/admin/annonces/${id}/dupliquer`)).json.annonce;
+  assert.equal(copie.fiche.pieces.length, 2);
+  assert.equal(copie.fiche.facade, 'Pierre');
+  for (const k of ['vendeur_noms', 'vendeur_email', 'mandat_type', 'cadastre', 'plus', 'moins']) assert.equal(k in copie.fiche, false, k);
+
+  // Vidée, la fiche redevient un vrai NULL en base.
+  r = await s.appel('PATCH', `/api/admin/annonces/${copie.id}`, { fiche: null });
+  assert.equal(r.statut, 200); assert.equal(r.json.annonce.fiche, null);
+  assert.equal((await db.une('select fiche is null as vide from annonces where pub_id = $1', [copie.id])).vide, true);
+});
+
+test('fiche technique et entretien : un brouillon commencé par sa fiche est gardé ; les coordonnées du vendeur s\'effacent 3 ans après la vente', async () => {
+  const s = session(); await connecterAdmin(s);
+  const { entretien } = require('../api/cron.js');
+  // Brouillon dont seule la fiche est remplie (visite technique avant la rédaction de l'annonce).
+  const brouillon = (await s.appel('POST', '/api/admin/annonces', {})).json.annonce.id;
+  await s.appel('PATCH', `/api/admin/annonces/${brouillon}`, { fiche: { pieces: [{ type: 'sejour', surface: 20 }] } });
+  await db.requete("update annonces set modifie_le = now() - interval '30 days' where pub_id = $1", [brouillon]);
+  // Bien vendu il y a plus de 3 ans, avec un vendeur renseigné.
+  const vendu = await annonceEnLigne(s, {});
+  await s.appel('PATCH', `/api/admin/annonces/${vendu}`, { fiche: { facade: 'Pierre', vendeur_noms: 'ANCIEN-VENDEUR', vendeur_tel: '06 00 00 00 00' } });
+  await db.requete("update annonces set statut = 'vendue', vendu_le = now() - interval '4 years', modifie_le = now() - interval '4 years' where pub_id = $1", [vendu]);
+  const bilan = await entretien();
+  assert.ok(bilan.vendeurs_effaces >= 1);
+  assert.ok(await db.une('select 1 from annonces where pub_id = $1', [brouillon]), 'brouillon avec fiche supprimé à tort');
+  const apres = await db.une('select fiche from annonces where pub_id = $1', [vendu]);
+  assert.deepEqual(apres.fiche, { facade: 'Pierre' });
+});

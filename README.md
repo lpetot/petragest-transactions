@@ -104,6 +104,9 @@ une image qu'une fois la copie réussie. OneDrive doit être lancé si le dossie
 - annonces : dépôt de photos par glisser-déposer (compression automatique, suppression du GPS), autocomplétion
   d'adresse IGN, contrôle des mentions obligatoires avant publication, enregistrement automatique des brouillons,
   sous offre / vendu / archivé, aperçu, duplication, corbeille (30 jours) ;
+- fiche technique (pièce par pièce, bâtiment, travaux, dossier interne du vendeur et du mandat), jamais visible des
+  acquéreurs, et documents à imprimer ou enregistrer en PDF aux couleurs de Petra Gest : fiche technique remise en
+  visite, bon de visite, fiche de rentrée, fiche découverte (préremplis depuis l'annonce, ou vierges) ;
 - codes d'accès : création, envoi par SMS / e-mail / copier-coller, historique par personne, prolongation,
   révocation, suppression (droit à l'effacement), export Excel ;
 - équipe : comptes nominatifs, mot de passe provisoire à changer, réinitialisation, désactivation.
@@ -117,10 +120,11 @@ reinitialiser-demo.cmd Remet la démonstration à neuf
 public/            Pages et fichiers servis tels quels (HTML, CSS, JS, images)
   index.html         saisie du code          biens.html   catalogue
   bien.html          fiche d'un bien         espace-gestion.html   gestion (application)
+  document.html      documents imprimables (fiche technique, bon de visite, fiche de rentrée, fiche découverte)
   honoraires.html, mentions-legales.html, confidentialite.html, 404.html
-  assets/css/        petra.css (charte, pages visiteurs), gestion.css (espace de gestion)
+  assets/css/        petra.css (charte, pages visiteurs), gestion.css (espace de gestion), document.css (A4)
   assets/js/         commun.js, referentiel.js (listes partagées avec le serveur), acces.js, biens.js,
-                     bien.js, visiteur.js, carte.js, photos.js, gestion.js
+                     bien.js, visiteur.js, carte.js, photos.js, gestion.js, document.js
 api/               Fonctions serveur (Vercel) : acces.js, biens.js, admin.js, cron.js
   _lib/              règles métier et outils (annonces, codes, sessions, sécurité, base, stockage...)
 sql/               Schéma de la base

@@ -5,6 +5,8 @@
 const crypto = require('node:crypto');
 const R = require('../../public/assets/js/referentiel.js');
 const config = require('./config');
+const { validerSelon } = require('./validation');
+const F = require('./fiche');
 
 const codesDe = (liste) => liste.map((x) => x[0]);
 
@@ -70,6 +72,10 @@ const CHAMPS = {
   reference_interne: { type: 'texte', max: 60 },
   note_interne: { type: 'texte', max: 2000 },
   mise_en_avant: { type: 'bool', nonNul: false },
+
+  // Fiche technique (pièce par pièce, bâtiment, travaux, dossier interne) : voir fiche.js.
+  // Jamais dans versPublic ni versCarte.
+  fiche: { type: 'objet', valider: F.valider },
 };
 
 const STATUTS = codesDe(R.statuts);
@@ -81,64 +87,7 @@ const MANQUE_MANDAT = "le numéro de mandat (affiché comme « Référence de l'
 
 // Valide un objet partiel envoyé par l'éditeur. Renvoie { valeurs, erreurs }.
 function valider(entree) {
-  const valeurs = {};
-  const erreurs = {};
-  for (const [nom, def] of Object.entries(CHAMPS)) {
-    if (!Object.prototype.hasOwnProperty.call(entree, nom)) continue;
-    let v = entree[nom];
-    const vide = v === null || v === undefined || (typeof v === 'string' && v.trim() === '');
-    if (vide) {
-      valeurs[nom] = def.nonNul !== undefined ? def.nonNul : null;
-      continue;
-    }
-    switch (def.type) {
-      case 'texte':
-        if (typeof v !== 'string') { erreurs[nom] = 'Texte attendu.'; break; }
-        v = v.replace(/\r\n?/g, '\n').trim();
-        if (v.length > def.max) { erreurs[nom] = `${def.max} caractères au maximum.`; break; }
-        valeurs[nom] = v;
-        break;
-      case 'entier': {
-        const n = typeof v === 'string' ? Number(v.replace(/[\s  ]/g, '')) : v;
-        if (!Number.isInteger(n)) { erreurs[nom] = 'Nombre entier attendu.'; break; }
-        if (n < def.min || n > def.max) { erreurs[nom] = 'Valeur hors limites.'; break; }
-        valeurs[nom] = n;
-        break;
-      }
-      case 'reel': {
-        const n = typeof v === 'string' ? Number(v.replace(/[\s  ]/g, '').replace(',', '.')) : v;
-        if (typeof n !== 'number' || !Number.isFinite(n)) { erreurs[nom] = 'Nombre attendu.'; break; }
-        if (n < def.min || n > def.max) { erreurs[nom] = 'Valeur hors limites.'; break; }
-        valeurs[nom] = Math.round(n * 1e6) / 1e6;
-        break;
-      }
-      case 'bool':
-        if (typeof v !== 'boolean') { erreurs[nom] = 'Oui ou non attendu.'; break; }
-        valeurs[nom] = v;
-        break;
-      case 'enum':
-        if (!def.valeurs.includes(v)) { erreurs[nom] = 'Valeur non reconnue.'; break; }
-        valeurs[nom] = v;
-        break;
-      case 'liste':
-        if (!Array.isArray(v) || v.some((x) => !def.valeurs.includes(x))) { erreurs[nom] = 'Liste non reconnue.'; break; }
-        valeurs[nom] = Array.from(new Set(v));
-        break;
-      case 'date':
-        if (typeof v !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(v) || Number.isNaN(Date.parse(v + 'T00:00:00Z'))) {
-          erreurs[nom] = 'Date attendue (AAAA-MM-JJ).'; break;
-        }
-        valeurs[nom] = v;
-        break;
-      case 'cp':
-        if (typeof v !== 'string' || !/^\d{5}$/.test(v.trim())) { erreurs[nom] = 'Code postal à 5 chiffres.'; break; }
-        valeurs[nom] = v.trim();
-        break;
-      default:
-        break;
-    }
-  }
-  return { valeurs, erreurs };
+  return validerSelon(CHAMPS, entree);
 }
 
 // Ce qui manque pour mettre une annonce en ligne (obligations légales comprises).
@@ -335,5 +284,5 @@ const SQL_VISIBLE = `a.supprime_le is null and (a.statut in ('publiee','sous_off
 
 module.exports = {
   CHAMPS, STATUTS, STATUTS_EN_LIGNE, SQL_VISIBLE, MANQUE_MANDAT,
-  valider, manquantsPourPublier, positionDecalee, prix, versPublic, versCarte, clePosition, environsAJour,
+  valider, manquantsPourPublier, positionDecalee, prix, versPublic, versCarte, clePosition, environsAJour, contactPublic,
 };

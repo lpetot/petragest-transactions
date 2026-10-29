@@ -79,6 +79,116 @@
       [6, 'Mandat simple'],
       [5, 'Mandat exclusif'],
     ],
+    // ---------- Fiche technique (lot 3) ----------
+    // Calée sur les deux modèles transmis par Catherine le 29/10/2026 (fiche technique de rentrée et fiche
+    // découverte d'un bien). Rien de ceci n'apparaît sur l'annonce publique : seulement dans les documents
+    // imprimés depuis l'espace de gestion.
+    // Pièces : [code, libellé, compte dans la surface habitable, groupe de détails]. Ne comptent pas :
+    // combles non aménagés, caves, garages, balcons, terrasses, vérandas (article R156-1 du code de la construction).
+    pieces: [
+      ['entree', 'Entrée', true, ''],
+      ['sejour', 'Séjour', true, ''],
+      ['salon', 'Salon', true, ''],
+      ['salle_manger', 'Salle à manger', true, ''],
+      ['cuisine', 'Cuisine', true, 'cuisine'],
+      ['chambre', 'Chambre', true, ''],
+      ['bureau', 'Bureau', true, ''],
+      ['salle_bains', 'Salle de bains', true, 'eau'],
+      ['salle_eau', "Salle d'eau", true, 'eau'],
+      ['wc', 'WC', true, 'wc'],
+      ['dressing', 'Dressing', true, ''],
+      ['buanderie', 'Buanderie', true, ''],
+      ['cellier', 'Cellier', true, ''],
+      ['degagement', 'Dégagement', true, ''],
+      ['mezzanine', 'Mezzanine', true, ''],
+      ['veranda', 'Véranda', false, ''],
+      ['combles', 'Combles ou grenier', false, ''],
+      ['cave', 'Cave', false, 'annexe'],
+      ['garage', 'Garage', false, 'annexe'],
+      ['balcon', 'Balcon', false, 'exterieur'],
+      ['terrasse', 'Terrasse', false, 'exterieur'],
+      ['jardin', 'Jardin', false, 'exterieur'],
+      ['autre', 'Autre pièce', true, ''],
+    ],
+    niveaux: [
+      ['sous_sol', 'Sous-sol'],
+      ['rdc', 'Rez-de-chaussée'],
+      ['n1', '1er étage'],
+      ['n2', '2ᵉ étage'],
+      ['n3', '3ᵉ étage'],
+      ['combles', 'Combles'],
+    ],
+    orientations: [['N', 'Nord'], ['S', 'Sud'], ['E', 'Est'], ['O', 'Ouest']],
+    sols: [
+      ['parquet', 'Parquet'],
+      ['carrelage', 'Carrelage'],
+      ['tomettes', 'Tomettes'],
+      ['pierre', 'Pierre'],
+      ['marbre', 'Marbre'],
+      ['beton_cire', 'Béton ciré'],
+      ['stratifie', 'Stratifié'],
+      ['vinyle', 'Sol vinyle'],
+      ['moquette', 'Moquette'],
+      ['jonc', 'Jonc de mer'],
+      ['autre', 'Autre revêtement'],
+    ],
+    // Cases proposées pour chaque pièce : les « communes » partout sauf à l'extérieur, puis celles de son groupe.
+    detailsPieces: {
+      commun: [
+        ['double_vitrage', 'Double vitrage'], ['cheminee', 'Cheminée'], ['placards', 'Placards'], ['moulures', 'Moulures'],
+        ['poutres', 'Poutres apparentes'], ['hauteur', 'Belle hauteur sous plafond'], ['volets', 'Volets'],
+        ['climatisation', 'Climatisation'], ['vue', 'Belle vue'],
+      ],
+      cuisine: [
+        ['separee', 'Séparée'], ['ouverte', 'Ouverte sur le séjour'], ['coin', 'Coin cuisine'], ['amenagee', 'Aménagée'],
+        ['equipee', 'Équipée'], ['ilot', 'Îlot central'], ['hotte', 'Hotte'],
+      ],
+      eau: [
+        ['baignoire', 'Baignoire'], ['douche', 'Douche'], ['italienne', "Douche à l'italienne"],
+        ['double_vasque', 'Double vasque'], ['avec_wc', 'WC'], ['seche_serviettes', 'Sèche-serviettes'],
+      ],
+      wc: [['independant', 'Indépendant'], ['lave_mains', 'Lave-mains']],
+      annexe: [['electricite', 'Électricité'], ['eau', 'Point d\'eau'], ['porte_auto', 'Porte motorisée']],
+      exterieur: [['clos', 'Clos'], ['arbore', 'Arboré'], ['sans_vis_a_vis', 'Sans vis-à-vis'], ['abrite', 'Abrité']],
+    },
+    mitoyennetes: [
+      ['independant', 'Indépendant'],
+      ['un_cote', "Mitoyen d'un côté"],
+      ['deux_cotes', 'Mitoyen des deux côtés'],
+    ],
+    vitrages: [['simple', 'Simple vitrage'], ['double', 'Double vitrage'], ['triple', 'Triple vitrage'], ['mixte', 'Vitrages différents selon les pièces']],
+    menuiseries: [['bois', 'Bois'], ['pvc', 'PVC'], ['alu', 'Aluminium'], ['mixte', 'Matériaux différents']],
+    assainissements: [['tout_egout', "Tout-à-l'égout"], ['fosse', 'Fosse septique'], ['micro_station', 'Micro-station']],
+    // Équipements techniques de la fiche : en plus des atouts de l'annonce (rien en double).
+    equipementsFiche: [
+      ['interphone', 'Interphone'], ['alarme', 'Alarme'], ['volets_roulants', 'Volets roulants électriques'],
+      ['portail', 'Portail motorisé'], ['vmc', 'VMC'], ['adoucisseur', "Adoucisseur d'eau"],
+      ['antenne', 'Antenne TV ou câble'], ['arrosage', 'Arrosage automatique'], ['puits', 'Puits'],
+      ['recuperateur', "Récupérateur d'eau de pluie"], ['solaire', 'Panneaux solaires'], ['borne', 'Borne de recharge'],
+      ['abri', 'Abri de jardin'], ['potager', 'Potager'],
+    ],
+    typesMandat: [['simple', 'Mandat simple'], ['exclusif', 'Mandat exclusif']],
+    typesBail: [
+      ['vide', "Location vide (bail d'habitation)"],
+      ['meuble', 'Location meublée'],
+      ['commercial', 'Bail commercial'],
+      ['professionnel', 'Bail professionnel'],
+      ['saisonnier', 'Location saisonnière'],
+      ['autre', 'Autre'],
+    ],
+    syndics: [['professionnel', 'Syndic professionnel'], ['benevole', 'Syndic bénévole']],
+    // Définition d'un type de pièce : [code, libellé, habitable, groupe], ou null.
+    pieceDe: function (code) {
+      for (var i = 0; i < this.pieces.length; i++) if (this.pieces[i][0] === code) return this.pieces[i];
+      return null;
+    },
+    // Cases proposées pour un type de pièce (les communes ne valent pas pour l'extérieur, la cave ou le garage).
+    detailsPour: function (code) {
+      var p = this.pieceDe(code);
+      var groupe = p ? p[3] : '';
+      var communes = groupe === 'exterieur' || groupe === 'annexe' ? [] : this.detailsPieces.commun;
+      return communes.concat(this.detailsPieces[groupe] || []);
+    },
     protections: [
       ['aucune', 'Aucune protection'],
       ['inscrit_mh', 'Inscrit aux monuments historiques'],

@@ -39,7 +39,7 @@ Lire d'abord `README.md`.
 
 ## Vérifier son travail
 
-- `npm test` doit rester entièrement vert (39 tests au 28/10/2026 ; ajouter un test pour toute nouvelle règle).
+- `npm test` doit rester entièrement vert (44 tests au 29/10/2026 ; ajouter un test pour toute nouvelle règle).
 - Vérification visuelle : lancer le serveur local et ouvrir les pages dans le navigateur habituel, en 1440 px et en
   390 px. Aucune page ne doit défiler horizontalement.
 - **Ne jamais lancer Chrome en série avec un profil temporaire neuf** (`--user-data-dir` jetable, captures
@@ -61,7 +61,10 @@ Lire d'abord `README.md`.
 - Les listes (types de bien, atouts, époques...) sont dans `public/assets/js/referentiel.js`, partagé par le
   navigateur et le serveur : modifier là et nulle part ailleurs.
 - Ce que voit un acquéreur est défini par `versPublic()` et `versCarte()` dans `api/_lib/annonces.js`
-  (liste blanche). Ne jamais y ajouter de champ interne.
+  (liste blanche). Ne jamais y ajouter de champ interne. La fiche technique (`fiche`) n'y figure jamais ; la fiche
+  imprimée remise au visiteur (`document.js`, « fiche ») n'en reprend jamais le dossier interne (`INTERNES` de `fiche.js`).
+- Documents imprimés : les règles « petit écran » de `document.css` doivent rester sous `@media screen`, sinon
+  l'impression (page d'environ 700 px de large) bascule en mise en page de téléphone.
 
 ## Où est quoi
 
@@ -74,6 +77,8 @@ Lire d'abord `README.md`.
 | Règles de publication (mentions obligatoires) | `api/_lib/annonces.js` (`manquantsPourPublier`) |
 | « Découvrir les environs » (requête OpenStreetMap, classement, durées) | `public/assets/js/environs.js` (partagé), `scripts/environs.js` |
 | Carte d'un bien (catalogue et « autres biens » de la fiche) | `public/assets/js/carte-bien.js` |
+| Fiche technique (pièce par pièce, dossier interne) : règles | `api/_lib/fiche.js` (validation), listes dans `referentiel.js` |
+| Documents imprimables (fiche technique, bon de visite, fiche de rentrée, fiche découverte) | `public/document.html`, `public/assets/js/document.js`, `public/assets/css/document.css` ; textes du bon de visite et identité de l'agence dans `api/_lib/config.js` |
 | Données de démonstration | `scripts/local/demo.js`, illustrations `scripts/demo/photos/` |
 
 ## Ce qu'il ne faut pas faire

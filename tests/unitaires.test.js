@@ -227,3 +227,67 @@ test('atouts : chacun a sa tournure pour la phrase de la description, aucun tire
   assert.equal(/[–—]/.test(JSON.stringify(R.phrasesAtouts) + JSON.stringify(R.atouts)), false);
   assert.deepEqual(R.baremeVente.map((x) => x[0]), [6, 5]);
 });
+
+test('fiche technique : liste blanche, pièces normalisées, détails propres à chaque pièce, vide = NULL', () => {
+  const F = require('../api/_lib/fiche');
+  let r = F.valider({
+    facade: '  Pierre  ', inconnu: 'x', mitoyennete: 'code_retire', equipements: ['alarme', 'disparu'],
+    pieces: [
+      { type: 'cuisine', nom: 'Cuisine', surface: '12,5', orientations: ['S', 'Z'], sol: 'parquet', details: ['equipee', 'baignoire', 'cheminee'], pirate: 1 },
+      { type: 'type_retire', surface: 10 },
+      { type: 'balcon', surface: 6, details: ['double_vitrage', 'clos'] },
+    ],
+  });
+  assert.equal(r.erreur, undefined);
+  assert.deepEqual(r.valeur, {
+    facade: 'Pierre', equipements: ['alarme'],
+    pieces: [
+      { type: 'cuisine', nom: 'Cuisine', surface: 12.5, orientations: ['S'], sol: 'parquet', details: ['equipee', 'cheminee'] },
+      { type: 'balcon', surface: 6, details: ['clos'] },
+    ],
+  });
+  // Erreurs claires, avec le nom du champ ou le rang de la pièce.
+  assert.match(F.valider({ plus: 'x'.repeat(1501) }).erreur, /^Les plus : 1500 caractères/);
+  assert.match(F.valider({ pieces: [{ type: 'salon', surface: 'beaucoup' }] }).erreur, /^Pièce 1, surface/);
+  assert.match(F.valider({ pieces: Array.from({ length: 61 }, () => ({ type: 'chambre' })) }).erreur, /60 pièces/);
+  assert.match(F.valider({ bail_debut: '31/12/2026' }).erreur, /Date attendue/);
+  assert.equal(F.valider('texte').erreur, 'Fiche technique illisible.');
+  // Une fiche entièrement vidée redevient NULL.
+  assert.deepEqual(F.valider({ facade: '', pieces: [] }), { valeur: null });
+  assert.deepEqual(F.valider(null), { valeur: null });
+  // Passe par la validation de l'annonce.
+  const v = A.valider({ fiche: { toiture: 'Ardoise' } });
+  assert.deepEqual(v.valeurs.fiche, { toiture: 'Ardoise' });
+  assert.ok(A.valider({ fiche: { loyer_hc: -5 } }).erreurs.fiche);
+});
+
+test('fiche technique : jamais dans la fiche publique ; « Dupliquer » ne recopie ni vendeur, ni mandat, ni lot, ni location', () => {
+  const F = require('../api/_lib/fiche');
+  const fiche = {
+    pieces: [{ type: 'sejour', surface: 30 }, { type: 'cave', surface: 12 }, { type: 'chambre', surface: 11.25 }],
+    facade: 'Pierre', cadastre: 'AB 12, lot 417', loue: true, loyer_hc: 900,
+    mandat_type: 'exclusif', vendeur_noms: 'VENDEUR-SECRET', vendeur_tel: '06 00 00 00 00', plus: 'PLUS-SECRET', moins: 'MOINS-SECRET',
+  };
+  const pub = JSON.stringify(A.versPublic({ fiche, statut: 'publiee', affichage_adresse: 'zone' }, []));
+  for (const secret of ['VENDEUR-SECRET', 'PLUS-SECRET', 'MOINS-SECRET', 'lot 417', 'fiche', 'pieces']) {
+    assert.equal(pub.includes(secret), false, `${secret} visible des acquéreurs`);
+  }
+  assert.equal(JSON.stringify(A.versCarte({ fiche })).includes('VENDEUR'), false);
+  assert.deepEqual(F.pourDuplication(fiche), { pieces: fiche.pieces, facade: 'Pierre' });
+  assert.equal(F.pourDuplication({ vendeur_noms: 'X' }), null);
+  for (const k of F.INTERNES) assert.ok(F.NON_RECOPIES.includes(k), `${k} serait recopié`);
+  // Surface des pièces : la cave ne compte pas dans l'habitable.
+  assert.equal(F.surfacePieces(fiche), 41.25);
+});
+
+test('fiche technique : chaque pièce a un groupe de détails connu, libellés sans tiret long', () => {
+  const R = require('../public/assets/js/referentiel.js');
+  for (const [code, , habitable, groupe] of R.pieces) {
+    assert.equal(typeof habitable, 'boolean', code);
+    assert.ok(groupe === '' || R.detailsPieces[groupe], `groupe inconnu pour ${code}`);
+  }
+  assert.deepEqual(R.detailsPour('balcon').map((x) => x[0]), ['clos', 'arbore', 'sans_vis_a_vis', 'abrite']);
+  assert.ok(R.detailsPour('salle_bains').some((x) => x[0] === 'baignoire') && R.detailsPour('salle_bains').some((x) => x[0] === 'double_vitrage'));
+  const tout = JSON.stringify([R.pieces, R.detailsPieces, R.sols, R.equipementsFiche, R.typesBail, R.typesMandat, R.mitoyennetes]);
+  assert.equal(/[–—]/.test(tout), false);
+});

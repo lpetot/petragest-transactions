@@ -34,6 +34,37 @@ remis : l'espace vous demande aussitôt d'en choisir un personnel (12 caractère
 Tant que l'annonce est un brouillon, tout est enregistré automatiquement. Une fois en ligne, pensez au bouton
 **Enregistrer** après une modification.
 
+## Fiche technique, bon de visite et documents à imprimer
+
+Deux rubriques facultatives, en bas de l'annonce, ne sont **jamais montrées sur l'annonce** :
+
+- **8. Fiche technique** : la visite technique du bien.
+  - **Pièce par pièce** : cliquez sur une pièce pour l'ajouter (Entrée, Séjour, Chambre...), ou sur **Préparer la liste**
+    pour partir des chambres et salles de bains de l'annonce. Pour chaque pièce : nom, surface, niveau, sol, exposition
+    (N, S, E, O), cases (double vitrage, cheminée, cuisine équipée, baignoire...) et une remarque libre. Les flèches
+    changent l'ordre. Le total des pièces habitables s'affiche dessous (balcon, cave, garage... ne comptent pas).
+  - Le bâtiment et le confort (construction, façade, toiture, vitrage, assainissement, équipements), les travaux,
+    le cadastre, le syndic, et la situation locative si le bien est loué.
+- **9. Dossier interne** : type et date du mandat, apporteur, vendeur (nom, adresse, téléphone, e-mail), notaire,
+  organisation des visites, les plus et les moins. Ces informations ne figurent que sur la fiche de rentrée.
+
+**Documents à imprimer** (sous l'annonce, ou par **Plus d'actions**) : ils s'ouvrent dans un nouvel onglet, aux couleurs
+de Petra Gest. Bouton **Imprimer ou enregistrer en PDF**, puis, dans la fenêtre d'impression, choisissez la destination
+« Enregistrer au format PDF » et décochez « En-têtes et pieds de page ».
+
+- **Fiche technique** : à remettre au visiteur. Photos, chiffres clés, prix, pièce par pièce, bâtiment, travaux, charges,
+  DPE, environs, votre contact. Rien du dossier interne. Cases en haut de page : adresse exacte, photos, environs.
+- **Bon de visite** : prérempli avec le bien ; tapez en haut le nom du visiteur, la date et l'heure, puis imprimez en
+  deux exemplaires à faire signer.
+- **Fiche de rentrée** : le dossier interne complet. Ce qui n'est pas encore saisi reste en pointillés, à compléter à la main.
+- **Fiche découverte** : le questionnaire du rendez-vous d'estimation chez le propriétaire.
+
+Sur l'**accueil**, la carte **Documents vierges à imprimer** donne la fiche découverte, la fiche de rentrée et le bon de
+visite à remplir à la main, avant même que l'annonce existe.
+
+« Dupliquer » recopie la fiche technique (pièces, bâtiment) mais jamais le vendeur, le mandat, le lot cadastral ni la
+location. Les coordonnées du vendeur sont effacées automatiquement 3 ans après la vente ou l'archivage du bien.
+
 ## Faire évoluer une annonce
 
 Annonces > cliquez sur l'annonce > **Plus d'actions** : passer sous offre, marquer comme vendu, remettre en vente,

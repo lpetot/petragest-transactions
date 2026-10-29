@@ -18,6 +18,35 @@ module.exports = {
     photo: '/assets/personne-catherine.jpg',
   },
 
+  // Agence : en-tête et pied des documents imprimés (fiche technique, bon de visite...).
+  // Reprend la page Mentions légales (public/mentions-legales.html) : les modifier ensemble.
+  agence: {
+    nom: 'Petra Gest',
+    raisonSociale: 'Petragest SAS',
+    adresse: '10 rue Bazeilles',
+    codePostal: '17300',
+    ville: 'Rochefort',
+    tel: '05 64 72 07 81',
+    email: 'direction@petragest.com',
+    site: 'petragest.com',
+    carte: 'Carte professionnelle n° CPI 1701 2025 000 000 014',
+    garantie: 'Garantie financière : Galian SMA BTP, 120 000 €',
+    signature: "Spécialiste du patrimoine immobilier d'exception.",
+  },
+
+  // Textes des documents imprimés. {agence}, {mandat} et {email} sont remplacés à l'impression.
+  // ⚠ Le texte du bon de visite est un modèle rédigé par MJ Data le 29/10/2026 : à faire valider par Catherine.
+  documents: {
+    bonDeVisite: [
+      "Je reconnais avoir visité ce jour le bien désigné ci-dessus, qui m'a été présenté par {agence}{mandat}.",
+      "J'ai été informé(e) du prix demandé et des honoraires de l'agence, dont le barème est consultable sur petragest.com.",
+      "Si je décide d'acquérir ce bien, je m'engage à le faire par l'intermédiaire de {agence}, et à ne pas traiter "
+        + "directement avec le propriétaire, ni par l'intermédiaire d'un autre professionnel ou d'un tiers.",
+    ],
+    bonDeVisiteDonnees: "Les informations portées sur ce bon servent uniquement au suivi de votre visite et de la vente "
+      + "par {agence}, et ne sont transmises à personne d'autre. Pour les consulter ou les faire effacer : {email}.",
+  },
+
   // Codes d'accès
   dureesCodeMois: [1, 3, 6, 12],
   dureeCodeMoisDefaut: 3,

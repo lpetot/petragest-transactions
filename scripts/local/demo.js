@@ -37,6 +37,34 @@ const ANNONCES = [
     dpe_statut: 'realise', dpe_classe: 'D', ges_classe: 'D', dpe_conso: 198, ges_emission: 41,
     dpe_depenses_min: 5900, dpe_depenses_max: 8100, dpe_annee_prix: 2023, dpe_date: '2024-03-12',
     numero_mandat: '2026-014', reference_interne: 'PG-T-2026-014', note_interne: 'Vendeurs disponibles le samedi matin pour les visites.',
+    // Fiche technique de démonstration (lot 3) : vendeur et notaire fictifs.
+    fiche: {
+      pieces: [
+        { type: 'entree', nom: 'Vestibule', niveau: 'rdc', surface: 18.5, sol: 'pierre', details: ['moulures', 'hauteur'], commentaire: 'Escalier de pierre à rampe en fer forgé' },
+        { type: 'salon', nom: 'Grand salon', niveau: 'rdc', surface: 46.2, orientations: ['S', 'O'], sol: 'parquet', details: ['cheminee', 'moulures', 'hauteur', 'volets'], commentaire: 'Parquet à la française, cheminée en marbre' },
+        { type: 'salon', nom: 'Petit salon', niveau: 'rdc', surface: 31.8, orientations: ['S'], sol: 'parquet', details: ['cheminee', 'moulures'], commentaire: "Boiseries d'origine" },
+        { type: 'salle_manger', niveau: 'rdc', surface: 34.4, orientations: ['O'], sol: 'parquet', details: ['moulures', 'placards'] },
+        { type: 'cuisine', niveau: 'rdc', surface: 22.1, orientations: ['N'], sol: 'tomettes', details: ['separee', 'amenagee', 'equipee', 'hotte'] },
+        { type: 'chambre', nom: 'Suite parentale', niveau: 'n1', surface: 38.6, orientations: ['S'], sol: 'parquet', details: ['cheminee', 'placards', 'vue'], commentaire: 'Avec bureau attenant et dressing' },
+        { type: 'salle_eau', nom: "Salle d'eau de la suite", niveau: 'n1', surface: 9.4, sol: 'marbre', details: ['italienne', 'double_vasque', 'avec_wc'] },
+        { type: 'chambre', nom: 'Chambre 2', niveau: 'n1', surface: 24.3, orientations: ['S'], sol: 'parquet', details: ['cheminee'] },
+        { type: 'chambre', nom: 'Chambre 3', niveau: 'n1', surface: 21.7, orientations: ['N'], sol: 'parquet' },
+        { type: 'wc', niveau: 'rdc', surface: 2.4, sol: 'carrelage', details: ['independant', 'lave_mains'] },
+        { type: 'cave', nom: 'Caves voûtées', niveau: 'sous_sol', surface: 64, details: ['electricite'] },
+        { type: 'jardin', nom: 'Jardin clos de murs', surface: 420, orientations: ['S'], details: ['clos', 'arbore', 'sans_vis_a_vis'] },
+      ],
+      construction: 'Pierre de taille', facade: 'Pierre, restaurée en 2019', toiture: 'Ardoise, restaurée en 2019',
+      mitoyennete: 'un_cote', vitrage: 'mixte', menuiseries: 'bois', assainissement: 'tout_egout',
+      equipements: ['interphone', 'alarme', 'portail'],
+      travaux_realises: 'Toitures et façades restaurées en 2019 sous le contrôle des Bâtiments de France.', garantie_decennale: true,
+      travaux_a_prevoir: 'Rafraîchissement des peintures du deuxième étage.',
+      cadastre: 'Section AB n° 0000 (exemple)', loue: false,
+      mandat_type: 'exclusif', mandat_date: '2026-09-15', apporteur: 'Recommandation',
+      vendeur_noms: 'Famille Exemple (fictive)', vendeur_adresse: "1 rue de l'Exemple, 17300 Rochefort", vendeur_tel: '06 00 00 00 00',
+      vendeur_email: 'vendeur@exemple.fr', notaire: 'Office notarial Exemple, Rochefort',
+      visites: "Clés à l'agence. Prévenir les vendeurs la veille.",
+      plus: "Décor d'origine remarquable, jardin clos rare en centre historique.", moins: 'Cuisine à moderniser, pas de garage fermé.',
+    },
   },
   {
     cle: 'arsenal', photos: ['arsenal-sejour', 'arsenal-vue', 'arsenal-facade'],
@@ -161,8 +189,9 @@ const HISTORIQUE = [
 async function insererAnnonce(def, adminId) {
   const colonnes = Object.keys(def).filter((k) =>
     !['cle', 'photos', 'legendes', 'publie', 'vendu', 'statut'].includes(k));
-  const valeurs = colonnes.map((c) => (c === 'atouts' ? JSON.stringify(def[c]) : def[c]));
-  const marques = colonnes.map((c, i) => (c === 'atouts' ? `$${i + 1}::jsonb` : `$${i + 1}`));
+  const json = (c) => c === 'atouts' || c === 'fiche';
+  const valeurs = colonnes.map((c) => (json(c) ? JSON.stringify(def[c]) : def[c]));
+  const marques = colonnes.map((c, i) => (json(c) ? `$${i + 1}::jsonb` : `$${i + 1}`));
   const n = colonnes.length;
   const pub = sec.identifiantPublic();
   // Position « zone » décalée une fois, comme le fait l'éditeur.
