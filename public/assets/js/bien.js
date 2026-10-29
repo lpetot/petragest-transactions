@@ -233,6 +233,8 @@
           h('span', { class: 'environs__duree' }, window.ENVIRONS.texteDuree(l))));
         if (plan) plan.placer(l.lat, l.lng, String(i + 1));
       });
+      // La carte prend le zoom qui montre tous les lieux de l'onglet (un hôpital à 3 km, par exemple).
+      if (plan) plan.cadrer();
     }
     dessiner();
     return h('div', { class: 'environs' },

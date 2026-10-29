@@ -341,7 +341,8 @@ strong{font-weight:700}
 
 /* Carte IGN */
 .carte{position:relative;height:340px;overflow:hidden;background:#E9E5DD;border:1px solid var(--navy-line)}
-.carte__tuiles{position:absolute;left:50%;top:50%}
+.carte__tuiles{position:absolute;left:50%;top:50%;transition:opacity .35s ease}
+.carte__tuiles--neuve{opacity:0}
 .carte__tuiles img{position:absolute;width:256px;height:256px;max-width:none;user-select:none}
 .carte__cercle{position:absolute;left:50%;top:50%;border-radius:50%;transform:translate(-50%,-50%);border:2px solid var(--navy);background:rgba(0,27,92,.12);pointer-events:none}
 .carte__point{position:absolute;left:50%;top:50%;width:18px;height:18px;transform:translate(-50%,-50%) rotate(45deg);background:var(--navy);border:3px solid var(--white);box-shadow:0 4px 10px rgba(0,0,0,.35)}
