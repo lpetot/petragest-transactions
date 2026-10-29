@@ -250,6 +250,7 @@ strong{font-weight:700}
 .card__pied{margin-top:auto;padding-top:1rem;border-top:1px solid var(--navy-line);display:flex;align-items:flex-end;justify-content:space-between;gap:1rem}
 .card__prix{font-family:var(--ff-display);font-size:1.35rem;color:var(--navy-deep);line-height:1.2}
 .card__prix small{display:block;font-family:var(--ff-text);font-size:.7rem;color:var(--slate);letter-spacing:.02em}
+.card__prix small.card__m2{font-size:.78rem;font-weight:700;color:var(--navy-deep);margin-top:.15rem}
 .card__lien{position:absolute;inset:0;z-index:1}
 .card__lien:focus-visible{outline-offset:-3px}
 .card--vendu .card__media img{filter:grayscale(.55) brightness(.95)}
@@ -378,6 +379,7 @@ strong{font-weight:700}
 .prix-carte::after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border:1px solid rgba(230,205,183,.2);transform:rotate(45deg)}
 .prix-carte .eyebrow{margin-bottom:.8rem}
 .prix-carte__montant{font-family:var(--ff-display);font-size:clamp(1.9rem,3vw,2.3rem);line-height:1.15}
+.prix-carte__m2{margin-top:.35rem;font-size:.95rem;font-weight:600;color:var(--sand)}
 .prix-carte__detail{margin-top:.7rem;font-size:.84rem;color:rgba(255,255,255,.72);line-height:1.55}
 .prix-carte__statut{margin-top:1rem}
 .prix-carte__honoraires{margin-top:.55rem;font-size:.84rem}

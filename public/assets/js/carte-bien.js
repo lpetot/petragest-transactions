@@ -24,7 +24,8 @@
     var detail = b.prix.charge === 'acquereur'
       ? (b.prix.pourcentage ? 'Honoraires inclus : ' + P.nombre(b.prix.pourcentage) + ' % TTC à la charge de l’acquéreur' : 'Honoraires inclus')
       : b.prix.charge === 'vendeur' ? 'Honoraires à la charge du vendeur' : '';
-    return h('p', { class: 'card__prix' }, P.prix(b.prix.fai), detail ? h('small', null, detail) : null);
+    var m2 = P.prixM2(b.prix, b.type_bien);
+    return h('p', { class: 'card__prix' }, P.prix(b.prix.fai), m2 ? h('small', { class: 'card__m2' }, m2) : null, detail ? h('small', null, detail) : null);
   }
 
   function carte(b) {

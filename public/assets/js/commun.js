@@ -149,6 +149,11 @@
   function prix(n) { return n === null || n === undefined ? '' : nfPrix.format(n); }
   function nombre(n) { return n === null || n === undefined ? '' : nfNombre.format(n); }
   function surface(n) { return n === null || n === undefined ? '' : nfNombre.format(n) + ' m²'; }
+  // « 5 287 € le m² » à partir du prix calculé par le serveur (prix honoraires inclus / surface habitable).
+  function prixM2(p, typeBien) {
+    if (!p || !(p.m2 > 0)) return '';
+    return nfPrix.format(p.m2) + (typeBien === 'terrain' ? ' le m² de terrain' : ' le m²');
+  }
   function hectares(m2) {
     if (m2 === null || m2 === undefined) return '';
     if (m2 >= 10000) return nfNombre.format(Math.round(m2 / 100) / 100) + ' ha';
@@ -253,7 +258,7 @@
 
   window.P = {
     h: h, vider: vider, icone: icone, flute: flute, eyebrow: eyebrow, api: api, ErreurApi: ErreurApi,
-    prix: prix, nombre: nombre, surface: surface, hectares: hectares, date: date, dateHeure: dateHeure, ilYa: ilYa,
+    prix: prix, prixM2: prixM2, nombre: nombre, surface: surface, hectares: hectares, date: date, dateHeure: dateHeure, ilYa: ilYa,
     etage: etage, civilite: civilite, pluriel: pluriel, taille: taille, toast: toast, message: message, pastilleDpe: pastilleDpe,
     initEntete: initEntete, reveler: reveler, bandeauDemo: bandeauDemo,
   };

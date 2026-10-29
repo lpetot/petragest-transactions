@@ -143,6 +143,10 @@ function positionDecalee(lat, lng) {
 function prix(a) {
   if (!(a.prix_fai > 0)) return null;
   const p = { fai: a.prix_fai, charge: a.honoraires_charge || null };
+  // Prix au m² (demande de Catherine, réunion du 28/10/2026) : prix honoraires inclus rapporté à la surface
+  // habitable (à celle du terrain pour un terrain), arrondi à l'euro.
+  const surface = a.type_bien === 'terrain' ? a.surface_terrain : a.surface_habitable;
+  if (surface > 0) p.m2 = Math.round(a.prix_fai / surface);
   if (a.honoraires_charge === 'acquereur' && a.honoraires_ttc > 0 && a.honoraires_ttc < a.prix_fai) {
     p.honoraires_ttc = a.honoraires_ttc;
     p.net = a.prix_fai - a.honoraires_ttc;

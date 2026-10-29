@@ -100,6 +100,16 @@ test('prix : pas de centime inventé, pourcentage calculé pour l\'affichage', (
   assert.equal(A.prix({ prix_fai: null }), null);
 });
 
+test('prix au m² : prix honoraires inclus sur la surface habitable (terrain pour un terrain), arrondi à l\'euro', () => {
+  // Bâtiment C, lot C204 : 511 980 € pour 96,84 m².
+  assert.equal(A.prix({ prix_fai: 511980, surface_habitable: 96.84, type_bien: 'appartement' }).m2, 5287);
+  assert.equal(A.prix({ prix_fai: 90000, surface_terrain: 1200, surface_habitable: null, type_bien: 'terrain' }).m2, 75);
+  assert.equal('m2' in A.prix({ prix_fai: 200000, surface_habitable: null }), false, 'pas de surface : pas de prix au m²');
+  assert.equal('m2' in A.prix({ prix_fai: 200000, surface_habitable: 0 }), false);
+  const pub = A.versPublic({ ...complete, statut: 'publiee', atouts: [], prix_fai: 511980, surface_habitable: 96.84 }, []);
+  assert.equal(pub.prix.m2, 5287);
+});
+
 test('visiteur : aucune donnée interne ni coordonnée exacte dans la fiche publique', () => {
   const a = {
     ...complete, id: 42, pub_id: 'abcdefghij', statut: 'publiee', atouts: [], adresse: '12 rue Secrète',

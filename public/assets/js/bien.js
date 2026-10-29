@@ -266,6 +266,7 @@
       enfants.push(h('p', { class: 'prix-carte__detail' }, 'Ce bien a trouvé preneur. Contactez-nous : nous pouvons vous présenter des biens similaires.'));
     } else if (b.prix) {
       enfants.push(h('p', { class: 'prix-carte__montant' }, P.prix(b.prix.fai)));
+      if (b.prix.m2) enfants.push(h('p', { class: 'prix-carte__m2' }, 'Soit ' + P.prixM2(b.prix, b.type_bien)));
       if (b.prix.charge === 'acquereur' && b.prix.net) {
         enfants.push(h('p', { class: 'prix-carte__detail' },
           'Honoraires inclus : ' + P.nombre(b.prix.pourcentage) + ' % TTC à la charge de l\'acquéreur, soit un prix de '
@@ -291,6 +292,7 @@
   function prixMobile(b) {
     var montant = b.statut === 'vendue' ? 'Vendu' : b.prix ? P.prix(b.prix.fai) : 'Prix sur demande';
     var detail = b.statut === 'vendue' ? '' : b.prix && b.prix.charge === 'acquereur' ? 'Honoraires inclus' : b.prix && b.prix.charge === 'vendeur' ? 'Honoraires à la charge du vendeur' : '';
+    if (b.statut !== 'vendue' && b.prix && b.prix.m2) detail = [detail, P.prixM2(b.prix, b.type_bien)].filter(Boolean).join(' · ');
     return h('div', { class: 'fiche__prix-mobile' }, h('div', null, h('strong', null, montant), detail ? h('small', null, detail) : null),
       h('a', { class: 'btn btn--sand btn--sm', href: '#contact' }, P.icone('tel'), 'Contacter'));
   }

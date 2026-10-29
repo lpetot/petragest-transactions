@@ -244,6 +244,7 @@
     var photos = a.photos || [];
     var chiffres = [
       [a.prix_fai ? P.prix(a.prix_fai) : '', 'Honoraires inclus'],
+      [a.prix_detail && a.prix_detail.m2 ? P.prix(a.prix_detail.m2) : '', a.type_bien === 'terrain' ? 'Le m² de terrain' : 'Le m²'],
       [a.surface_habitable ? P.surface(a.surface_habitable) : '', 'Surface habitable'],
       [a.nb_pieces ? String(a.nb_pieces) : '', a.nb_pieces > 1 ? 'Pièces' : 'Pièce'],
       [a.nb_chambres ? String(a.nb_chambres) : '', a.nb_chambres > 1 ? 'Chambres' : 'Chambre'],
@@ -345,6 +346,7 @@
         bloc('Prix et surfaces', [ligne('Prix honoraires inclus', x.prix_fai ? P.prix(x.prix_fai) : ''),
           ligne('Honoraires TTC', x.honoraires_ttc ? P.prix(x.honoraires_ttc) + (p.charge ? ', à la charge ' + (p.charge === 'acquereur' ? 'de l\'acquéreur' : 'du vendeur') : '') : ''),
           ligne('Prix net vendeur', net ? P.prix(net) : ''),
+          ligne('Prix au m²', p.m2 ? P.prixM2(p, x.type_bien) : ''),
           ouiNon('Frais de notaire réduits (moins de 5 ans)', f.frais_notaire_reduits),
           ligne('Surface habitable', x.surface_habitable ? P.surface(x.surface_habitable) : ''),
           ligne('Surface loi Carrez', x.surface_carrez ? P.surface(x.surface_carrez) : ''),

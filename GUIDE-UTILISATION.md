@@ -13,6 +13,8 @@ remis : l'espace vous demande aussitôt d'en choisir un personnel (12 caractère
 2. **Photos** : glissez-les dans le cadre (ou cliquez pour les choisir). Elles sont réduites automatiquement.
    La première est la photo principale ; faites-les glisser pour changer l'ordre.
 3. **L'essentiel** : cliquez sur le type de bien, puis saisissez le prix (honoraires inclus), la surface, les pièces.
+   Le prix au m² (prix honoraires inclus divisé par la surface habitable, ou par le terrain pour un terrain) s'affiche
+   tout seul sur l'annonce, le catalogue et la fiche technique.
    Le bouton « Proposer un titre » écrit un titre à partir de ces informations ; vous pouvez le modifier.
 4. **Adresse** : tapez le début de l'adresse et choisissez-la dans la liste. Par défaut, les acquéreurs ne voient
    qu'une zone approximative : l'adresse exacte reste confidentielle jusqu'à la visite.
