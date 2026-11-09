@@ -254,6 +254,13 @@ strong{font-weight:700}
 .card__lien{position:absolute;inset:0;z-index:1}
 .card__lien:focus-visible{outline-offset:-3px}
 .card--vendu .card__media img{filter:grayscale(.55) brightness(.95)}
+/* Bandeau « Vendu » en travers du coin de la photo (biens vendus que l'agence montre dans le catalogue). */
+.card__bandeau{
+  position:absolute;top:1.7rem;right:-3.4rem;width:13rem;transform:rotate(38deg);text-align:center;
+  background:var(--navy);color:var(--white);border-top:2px solid var(--sand);border-bottom:2px solid var(--sand);
+  padding:.45rem 0;font-size:.78rem;font-weight:800;letter-spacing:.32em;text-transform:uppercase;
+  box-shadow:0 6px 18px rgba(0,17,60,.28);pointer-events:none;
+}
 .card__body > .btn{align-self:flex-start;margin-top:.3rem}
 .card:hover .card__body > .btn--solid{background:var(--sand);color:var(--navy-deep);border-color:var(--sand)}
 .pastille-dpe{

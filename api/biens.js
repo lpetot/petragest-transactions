@@ -3,7 +3,6 @@
 // (ou un admin connecté, pour l'aperçu).
 
 const db = require('./_lib/db');
-const config = require('./_lib/config');
 const A = require('./_lib/annonces');
 const { empreinteIp } = require('./_lib/securite');
 const h = require('./_lib/http');
@@ -32,8 +31,7 @@ async function liste(req, res) {
        (select count(*)::int from photos p where p.annonce_id = a.id) as nb_photos
      from annonces a
      where ${A.SQL_VISIBLE}
-     order by a.mise_en_avant desc, (a.statut = 'vendue') asc, a.publie_le desc nulls last, a.id desc`,
-    [config.vendusVisiblesJours]);
+     order by a.mise_en_avant desc, (a.statut = 'vendue') asc, a.publie_le desc nulls last, a.id desc`);
   h.envoyerJson(res, 200, { biens: lignes.map(A.versCarte) });
 }
 
@@ -43,9 +41,11 @@ async function fiche(req, res, pubId) {
   const apercu = Boolean(lecteur.admin);
   const a = apercu
     ? await db.une('select a.* from annonces a where a.pub_id = $1', [pubId])
-    : await db.une(`select a.* from annonces a where a.pub_id = $2 and ${A.SQL_VISIBLE}`,
-      [config.vendusVisiblesJours, pubId]);
+    : await db.une(`select a.* from annonces a where a.pub_id = $1 and ${A.SQL_VISIBLE}`, [pubId]);
   if (!a) throw new h.ErreurHttp(404, 'introuvable', "Ce bien n'est plus proposé.");
+  // Bien vendu montré dans le catalogue sans sa fiche (choix de l'agence) : seule la carte est visible.
+  const vendu = A.venduPublic(a);
+  if (vendu && !vendu.fiche && !apercu) throw new h.ErreurHttp(404, 'introuvable', "Ce bien n'est plus proposé.");
   const photos = await db.requete(
     'select url, url_mini, largeur, hauteur, legende from photos where annonce_id = $1 order by position', [a.id]);
   if (lecteur.visiteur) {

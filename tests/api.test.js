@@ -578,3 +578,54 @@ test('fiche technique et entretien : un brouillon commencé par sa fiche est gar
   const apres = await db.une('select fiche from annonces where pub_id = $1', [vendu]);
   assert.deepEqual(apres.fiche, { facade: 'Pierre' });
 });
+
+test('biens vendus dans le catalogue : sur décision de l\'agence, avec les seules informations choisies', async () => {
+  const s = session(); await connecterAdmin(s);
+  const v = session(); await v.appel('POST', '/api/acces', { code: 'PETRAGEST26X' });
+  const id = await annonceEnLigne(s, { numero_mandat: '2026-V01', quartier: 'Centre', nb_pieces: 5 });
+  const carte = async () => (await v.appel('GET', '/api/biens')).json.biens.find((b) => b.id === id);
+
+  // Vendu sans la case : il quitte le catalogue.
+  let r = await s.appel('PATCH', `/api/admin/annonces/${id}`, { statut: 'vendue' });
+  assert.equal(r.statut, 200); assert.equal(r.json.annonce.vendu_vitrine, false);
+  assert.equal(await carte(), undefined);
+  const liste = (await s.appel('GET', '/api/admin/annonces')).json.annonces.find((a) => a.id === id);
+  assert.equal(liste.vendu_vitrine, false, 'la rubrique Vendues reçoit l\'état de la case');
+
+  // Case cochée, choix par défaut : lieu, surfaces et mois ; ni prix, ni délai, ni fiche.
+  assert.equal((await s.appel('PATCH', `/api/admin/annonces/${id}`, { vendu_vitrine: true })).statut, 200);
+  let c = await carte();
+  assert.ok(c, 'visible avec la case');
+  assert.equal(c.statut, 'vendue');
+  assert.equal(c.ville, 'Rochefort'); assert.equal(c.surface_habitable, 120); assert.equal(c.prix, null);
+  assert.match(c.vendu.mois, /^\d{4}-\d{2}$/); assert.equal(c.vendu.delai_jours, null); assert.equal(c.vendu.fiche, false);
+  assert.equal(c.dpe_classe, null);
+  assert.equal((await v.appel('GET', '/api/biens?id=' + id)).statut, 404, 'sans « fiche », seule la carte est visible');
+  assert.equal((await s.appel('GET', '/api/biens?id=' + id)).statut, 200, "l'admin garde l'aperçu");
+
+  // Autres choix : sans lieu ni surfaces, avec prix, délai et fiche.
+  r = await s.appel('PATCH', `/api/admin/annonces/${id}`, { vendu_affichage: { lieu: false, surfaces: false, prix: true, delai: true, fiche: true } });
+  assert.equal(r.statut, 200);
+  c = await carte();
+  assert.equal(c.ville, null); assert.equal(c.quartier, null); assert.equal(c.surface_habitable, null); assert.equal(c.nb_pieces, null);
+  assert.equal(c.prix.fai, 500000); assert.equal(c.prix.net, undefined, 'seul le prix affiché, sans le détail des honoraires');
+  assert.ok(c.vendu.delai_jours >= 1); assert.equal(c.vendu.fiche, true);
+  const f = await v.appel('GET', '/api/biens?id=' + id);
+  assert.equal(f.statut, 200);
+  assert.equal(f.json.bien.localisation.ville, null); assert.equal(f.json.bien.localisation.position, null);
+  assert.equal(f.json.bien.surface_habitable, null);
+  assert.equal(JSON.stringify(f.json).includes('Centre'), false);
+
+  // Choix inconnus refusés ; décocher retire le bien ; remis en vente, il redevient une annonce normale.
+  assert.equal((await s.appel('PATCH', `/api/admin/annonces/${id}`, { vendu_affichage: { photos_vendeur: true } })).statut, 422);
+  assert.equal((await s.appel('PATCH', `/api/admin/annonces/${id}`, { vendu_affichage: { prix: 'oui' } })).statut, 422);
+  await s.appel('PATCH', `/api/admin/annonces/${id}`, { vendu_vitrine: false });
+  assert.equal(await carte(), undefined);
+  await s.appel('PATCH', `/api/admin/annonces/${id}`, { statut: 'publiee' });
+  c = await carte();
+  assert.equal(c.vendu, undefined); assert.equal(c.ville, 'Rochefort'); assert.ok(c.prix.net);
+
+  // Dupliquer ne recopie pas la case.
+  const copie = (await s.appel('POST', `/api/admin/annonces/${id}/dupliquer`)).json.annonce;
+  assert.equal(copie.vendu_vitrine, false);
+});

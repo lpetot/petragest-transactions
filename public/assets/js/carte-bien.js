@@ -18,8 +18,31 @@
     return f.map(function (x) { return h('span', null, P.icone(x[0]), x[1]); });
   }
 
+  // Ce que l'agence a choisi de dire d'un bien vendu : ['Vendu en novembre 2026', 'En 3 semaines', 'Prix affiché : 342 000 €'].
+  function detailsVente(b) {
+    var v = b.vendu || {};
+    var lignes = [];
+    if (v.mois) {
+      var d = new Date(v.mois + '-15T12:00:00Z');
+      lignes.push('Vendu en ' + new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(d));
+    } else lignes.push('Vendu');
+    if (v.delai_jours) {
+      var j = v.delai_jours;
+      var duree = j < 14 ? P.pluriel(j, 'jour', 'jours')
+        : j < 60 ? P.pluriel(Math.round(j / 7), 'semaine', 'semaines')
+          : Math.round(j / 30.4) + ' mois';
+      lignes.push('En ' + duree);
+    }
+    if (b.prix && b.prix.fai) lignes.push('Prix affiché : ' + P.prix(b.prix.fai));
+    return lignes;
+  }
+
   function lignePrix(b) {
-    if (b.statut === 'vendue') return h('p', { class: 'card__prix' }, 'Vendu', h('small', null, 'Nous consulter pour un bien similaire'));
+    if (b.statut === 'vendue') {
+      var d = detailsVente(b);
+      var suite = d.slice(1).join(' · ');
+      return h('p', { class: 'card__prix' }, d[0], h('small', null, suite || 'Nous consulter pour un bien similaire'));
+    }
     if (!b.prix) return h('p', { class: 'card__prix' }, 'Prix sur demande');
     var detail = b.prix.charge === 'acquereur'
       ? (b.prix.pourcentage ? 'Honoraires inclus : ' + P.nombre(b.prix.pourcentage) + ' % TTC à la charge de l’acquéreur' : 'Honoraires inclus')
@@ -32,7 +55,6 @@
     var titreType = R.libelle(R.typesBien, b.type_bien);
     var badges = [];
     if (b.statut === 'sous_offre') badges.push(h('span', { class: 'badge badge--sand' }, 'Sous offre'));
-    if (b.statut === 'vendue') badges.push(h('span', { class: 'badge' }, 'Vendu'));
     if (b.mise_en_avant && b.statut !== 'vendue') badges.push(h('span', { class: 'badge badge--white' }, P.icone('etoile'), 'Sélection'));
     if ((b.protection === 'inscrit_mh' || b.protection === 'classe_mh') && badges.length < 2) {
       // En toutes lettres : « Inscrit MH » n'est pas compris du grand public. Le niveau (inscrit ou classé) est précisé sur la fiche.
@@ -47,6 +69,9 @@
     }
     if (badges.length) media.appendChild(h('div', { class: 'card__badges' }, badges));
     if (b.nb_photos > 1) media.appendChild(h('span', { class: 'card__photos' }, P.icone('photo'), String(b.nb_photos)));
+    if (b.statut === 'vendue') media.appendChild(h('span', { class: 'card__bandeau' }, 'Vendu'));
+    // Bien vendu dont l'agence ne montre que la carte : ni bouton ni lien vers la fiche.
+    var lien = b.statut !== 'vendue' || (b.vendu && b.vendu.fiche);
 
     var lieu = [titreType, b.ville].filter(Boolean).join(' · ');
     return h('article', { class: 'card reveal' + (b.statut === 'vendue' ? ' card--vendu' : '') },
@@ -58,9 +83,10 @@
         h('div', { class: 'card__pied' },
           lignePrix(b),
           b.dpe_classe ? P.pastilleDpe(b.dpe_classe) : null),
-        h('span', { class: 'btn btn--solid btn--sm', 'aria-hidden': 'true' }, 'Découvrir le bien', P.icone('fleche'))),
-      h('a', { class: 'card__lien', href: '/bien?id=' + encodeURIComponent(b.id), 'aria-label': b.titre + (b.ville ? ', ' + b.ville : '') }));
+        lien ? h('span', { class: 'btn btn--solid btn--sm', 'aria-hidden': 'true' }, 'Découvrir le bien', P.icone('fleche')) : null),
+      lien ? h('a', { class: 'card__lien', href: '/bien?id=' + encodeURIComponent(b.id), 'aria-label': b.titre + (b.ville ? ', ' + b.ville : '') }) : null);
   }
 
   P.carteBien = carte;
+  P.detailsVente = detailsVente;
 })();

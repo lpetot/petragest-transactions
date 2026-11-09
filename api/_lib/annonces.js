@@ -73,12 +73,29 @@ const CHAMPS = {
   note_interne: { type: 'texte', max: 2000 },
   mise_en_avant: { type: 'bool', nonNul: false },
 
+  // Bien vendu montré dans le catalogue avec le bandeau « Vendu », et ce qui l'accompagne (voir R.affichageVendu).
+  vendu_vitrine: { type: 'bool', nonNul: false },
+  vendu_affichage: { type: 'objet', valider: validerAffichageVendu },
+
   // Fiche technique (pièce par pièce, bâtiment, travaux, dossier interne) : voir fiche.js.
   // Jamais dans versPublic ni versCarte.
   fiche: { type: 'objet', valider: F.valider },
 };
 
 const STATUTS = codesDe(R.statuts);
+
+// { lieu: true, prix: false, ... } : seules les clés de R.affichageVendu, en oui/non.
+function validerAffichageVendu(v) {
+  if (v === null) return { valeur: null };
+  if (typeof v !== 'object' || Array.isArray(v)) return { erreur: "Choix d'affichage non reconnus." };
+  const codes = codesDe(R.affichageVendu);
+  const valeur = {};
+  for (const [k, x] of Object.entries(v)) {
+    if (!codes.includes(k) || typeof x !== 'boolean') return { erreur: "Choix d'affichage non reconnus." };
+    valeur[k] = x;
+  }
+  return { valeur };
+}
 const STATUTS_EN_LIGNE = ['publiee', 'sous_offre', 'vendue'];
 
 // Le n° de mandat est exigé depuis le 28/10/2026. Les annonces déjà en ligne sans ce numéro restent
@@ -181,11 +198,39 @@ function position(a) {
 
 const iso = (d) => (d instanceof Date ? d.toISOString() : d || null);
 
+// Bien vendu montré dans le catalogue : ce que l'agence a choisi d'en dire (null si le bien n'est pas vendu).
+// { choix: { lieu, surfaces, date, delai, prix, fiche }, mois: 'AAAA-MM' | null, delai_jours: n | null, fiche: bool }
+function venduPublic(a) {
+  if (a.statut !== 'vendue') return null;
+  const choix = R.affichageVenduDe(a.vendu_affichage);
+  const vendu = a.vendu_le ? new Date(a.vendu_le) : null;
+  const publie = a.publie_le ? new Date(a.publie_le) : null;
+  return {
+    choix,
+    mois: choix.date && vendu ? vendu.toISOString().slice(0, 7) : null,
+    delai_jours: choix.delai && vendu && publie && vendu >= publie ? Math.max(1, Math.round((vendu - publie) / 86400000)) : null,
+    fiche: choix.fiche,
+  };
+}
+
+// Retire d'une sortie publique ce que l'agence n'a pas choisi de montrer pour un bien vendu.
+function filtrerVendu(sortie, v) {
+  const c = v.choix;
+  sortie.prix = c.prix && sortie.prix ? { fai: sortie.prix.fai, m2: sortie.prix.m2 } : null;
+  if (!c.surfaces) {
+    for (const k of ['surface_habitable', 'surface_carrez', 'surface_terrain', 'nb_pieces', 'nb_chambres', 'nb_sdb']) {
+      if (k in sortie) sortie[k] = null;
+    }
+  }
+  sortie.vendu = { mois: v.mois, delai_jours: v.delai_jours, fiche: v.fiche };
+  return sortie;
+}
+
 // Fiche complète vue par un visiteur. Liste blanche STRICTE : jamais d'identifiant interne,
 // de référence interne, de note interne ni de coordonnées exactes (sauf choix « adresse exacte »).
 // La référence publique est le n° de mandat.
 function versPublic(a, photos) {
-  return {
+  const sortie = {
     id: a.pub_id,
     reference: a.numero_mandat || null,
     statut: a.statut,
@@ -246,6 +291,14 @@ function versPublic(a, photos) {
     })),
     contact: contactPublic(),
   };
+  const v = venduPublic(a);
+  if (v) {
+    filtrerVendu(sortie, v);
+    if (!v.choix.lieu) {
+      sortie.localisation = { ville: null, code_postal: null, quartier: null, adresse: null, affichage: 'commune', position: null, environs: null };
+    }
+  }
+  return sortie;
 }
 
 // L'interlocutrice affichée sur la fiche, avec sa mention RSAC si elle est renseignée.
@@ -260,7 +313,7 @@ function contactPublic() {
 
 // Version courte pour la grille du catalogue.
 function versCarte(a) {
-  return {
+  const sortie = {
     id: a.pub_id,
     statut: a.statut,
     type_bien: a.type_bien,
@@ -280,13 +333,22 @@ function versCarte(a) {
     couverture: a.couverture || null,
     nb_photos: a.nb_photos || 0,
   };
+  const v = venduPublic(a);
+  if (v) {
+    filtrerVendu(sortie, v);
+    if (!v.choix.lieu) { sortie.ville = null; sortie.code_postal = null; sortie.quartier = null; }
+    sortie.dpe_classe = null;
+    sortie.mise_en_avant = false;
+    if (!v.fiche) sortie.nb_photos = 0;
+  }
+  return sortie;
 }
 
-// Condition SQL « visible par un visiteur » (paramètre : nombre de jours d'affichage des biens vendus).
+// Condition SQL « visible par un visiteur » : en ligne, sous offre, ou vendu que l'agence a choisi de montrer.
 const SQL_VISIBLE = `a.supprime_le is null and (a.statut in ('publiee','sous_offre')
-  or (a.statut = 'vendue' and a.vendu_le > now() - make_interval(days => $1::int)))`;
+  or (a.statut = 'vendue' and a.vendu_vitrine))`;
 
 module.exports = {
   CHAMPS, STATUTS, STATUTS_EN_LIGNE, SQL_VISIBLE, MANQUE_MANDAT,
-  valider, manquantsPourPublier, positionDecalee, prix, versPublic, versCarte, clePosition, environsAJour, contactPublic,
+  valider, manquantsPourPublier, positionDecalee, prix, venduPublic, versPublic, versCarte, clePosition, environsAJour, contactPublic,
 };

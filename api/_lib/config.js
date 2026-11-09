@@ -61,7 +61,6 @@ module.exports = {
   fenetreEchecsMinutes: 15,
 
   // Annonces
-  vendusVisiblesJours: 60,
   maxPhotosParAnnonce: 40,
 
   // Durées de conservation (RGPD)

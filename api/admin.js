@@ -196,7 +196,7 @@ function versAnnonceAdmin(a, photos) {
 async function annoncesListe(req, res) {
   const lignes = await db.requete(
     `select a.pub_id, a.statut, a.titre, a.type_bien, a.ville, a.prix_fai, a.supprime_le, a.modifie_le,
-            a.publie_le, a.vendu_le, a.mise_en_avant, a.reference_interne, a.numero_mandat,
+            a.publie_le, a.vendu_le, a.mise_en_avant, a.reference_interne, a.numero_mandat, a.vendu_vitrine,
        (select p.url_mini from photos p where p.annonce_id = a.id order by p.position limit 1) as couverture,
        (select count(*)::int from photos p where p.annonce_id = a.id) as nb_photos,
        (select count(*)::int from consultations c
@@ -208,7 +208,7 @@ async function annoncesListe(req, res) {
     annonces: lignes.map((a) => ({
       id: a.pub_id, statut: a.statut, titre: a.titre, type_bien: a.type_bien, ville: a.ville, prix_fai: a.prix_fai,
       en_corbeille: Boolean(a.supprime_le), supprime_le: iso(a.supprime_le), modifie_le: iso(a.modifie_le),
-      publie_le: iso(a.publie_le), vendu_le: iso(a.vendu_le), mise_en_avant: a.mise_en_avant,
+      publie_le: iso(a.publie_le), vendu_le: iso(a.vendu_le), mise_en_avant: a.mise_en_avant, vendu_vitrine: a.vendu_vitrine,
       reference_interne: a.reference_interne, numero_mandat: a.numero_mandat, couverture: a.couverture, nb_photos: a.nb_photos,
       vues_30j: a.vues_30j, visiteurs: a.visiteurs,
     })),
@@ -298,7 +298,7 @@ async function annonceModifier(req, res, m, admin) {
     const sets = [];
     const params = [];
     for (const col of colonnes) {
-      const json = col === 'atouts' || col === 'fiche';
+      const json = col === 'atouts' || col === 'fiche' || col === 'vendu_affichage';
       // Une fiche vidée devient un vrai NULL (et non le JSON « null »).
       params.push(json ? (maj[col] === null ? null : JSON.stringify(maj[col])) : maj[col]);
       sets.push(json ? `${col} = $${params.length}::jsonb` : `${col} = $${params.length}`);
@@ -345,7 +345,7 @@ async function annonceRestaurer(req, res, m) {
 // La fiche technique est recopiée sans le vendeur, le mandat, le cadastre ni la location (fiche.js).
 async function annonceDupliquer(req, res, m, admin) {
   const a = await trouverAnnonce(m[1]);
-  const cols = Object.keys(A.CHAMPS).filter((c) => !['titre', 'numero_mandat', 'fiche'].includes(c)).concat(['lat_pub', 'lng_pub']);
+  const cols = Object.keys(A.CHAMPS).filter((c) => !['titre', 'numero_mandat', 'fiche', 'vendu_vitrine'].includes(c)).concat(['lat_pub', 'lng_pub']);
   const fiche = F.pourDuplication(a.fiche);
   const copie = await db.une(
     `insert into annonces (pub_id, statut, cree_par, modifie_par, titre, fiche, ${cols.join(', ')})

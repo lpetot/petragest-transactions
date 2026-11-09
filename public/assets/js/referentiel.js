@@ -28,6 +28,16 @@
       ['vendue', 'Vendu'],
       ['archivee', 'Archivée'],
     ],
+    // Biens vendus affichés dans le catalogue : informations au choix de l'agence (3e valeur = cochée par défaut).
+    // La photo principale, le type de bien, le titre et le bandeau « Vendu » sont toujours affichés.
+    affichageVendu: [
+      ['lieu', 'Commune et quartier', true],
+      ['surfaces', 'Surface, pièces et chambres', true],
+      ['date', 'Mois de la vente', true],
+      ['delai', 'Délai de vente (« vendu en 3 semaines »)', false],
+      ['prix', 'Prix affiché (honoraires inclus)', false],
+      ['fiche', 'Fiche du bien consultable (photos, description)', false],
+    ],
     atouts: [
       ['parc', 'Parc'],
       ['jardin', 'Jardin'],
@@ -255,6 +265,14 @@
     libelle: function (liste, code) {
       for (var i = 0; i < liste.length; i++) if (liste[i][0] === code) return liste[i][1];
       return '';
+    },
+    // Choix d'affichage d'un bien vendu, complétés par les valeurs par défaut : { lieu: true, prix: false, ... }
+    affichageVenduDe: function (choix) {
+      var o = {};
+      this.affichageVendu.forEach(function (x) {
+        o[x[0]] = choix && typeof choix[x[0]] === 'boolean' ? choix[x[0]] : x[2];
+      });
+      return o;
     },
   };
 });

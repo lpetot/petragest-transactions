@@ -137,7 +137,7 @@ const ANNONCES = [
   {
     cle: 'bourgeois', photos: ['bourgeois-salon', 'bourgeois-facade'],
     legendes: ['Double séjour', "L'immeuble"],
-    statut: 'vendue', publie: 50, vendu: 9,
+    statut: 'vendue', publie: 50, vendu: 9, vendu_vitrine: true, vendu_affichage: { delai: true },
     type_bien: 'appartement', titre: 'Appartement bourgeois, parquet et moulures',
     description: "Au premier étage d'un immeuble bourgeois du XIXᵉ siècle, appartement de 128 m² aux volumes généreux : parquet en point de Hongrie, moulures, cheminées d'époque.\n\nDouble séjour, cuisine indépendante, trois chambres et une salle de bains. Cave. Proche des commerces et du jardin de la Marine.",
     atouts: ['parquet', 'moulures', 'cheminee', 'cave', 'hauteur_plafond', 'centre_ville'],
@@ -189,7 +189,7 @@ const HISTORIQUE = [
 async function insererAnnonce(def, adminId) {
   const colonnes = Object.keys(def).filter((k) =>
     !['cle', 'photos', 'legendes', 'publie', 'vendu', 'statut'].includes(k));
-  const json = (c) => c === 'atouts' || c === 'fiche';
+  const json = (c) => c === 'atouts' || c === 'fiche' || c === 'vendu_affichage';
   const valeurs = colonnes.map((c) => (json(c) ? JSON.stringify(def[c]) : def[c]));
   const marques = colonnes.map((c, i) => (json(c) ? `$${i + 1}::jsonb` : `$${i + 1}`));
   const n = colonnes.length;

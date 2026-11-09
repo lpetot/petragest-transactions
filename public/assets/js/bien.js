@@ -262,7 +262,9 @@
   function prixCarte(b) {
     var enfants = [P.eyebrow('Prix de vente', true)];
     if (b.statut === 'vendue') {
-      enfants.push(h('p', { class: 'prix-carte__montant' }, 'Vendu'));
+      var vente = P.detailsVente(b);
+      enfants.push(h('p', { class: 'prix-carte__montant' }, vente[0]));
+      if (vente.length > 1) enfants.push(h('p', { class: 'prix-carte__m2' }, vente.slice(1).join(' · ')));
       enfants.push(h('p', { class: 'prix-carte__detail' }, 'Ce bien a trouvé preneur. Contactez-nous : nous pouvons vous présenter des biens similaires.'));
     } else if (b.prix) {
       enfants.push(h('p', { class: 'prix-carte__montant' }, P.prix(b.prix.fai)));

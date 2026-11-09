@@ -326,6 +326,23 @@
     return a.statut === o;
   }
 
+  // Case « Dans le catalogue » d'un bien vendu (rubrique Vendues) : enregistrée tout de suite.
+  function caseCatalogue(a) {
+    var c = h('input', { type: 'checkbox' });
+    c.checked = Boolean(a.vendu_vitrine);
+    c.addEventListener('change', function () {
+      var oui = c.checked;
+      c.disabled = true;
+      api('annonces/' + a.id, { method: 'PATCH', corps: { vendu_vitrine: oui } }).then(function () {
+        a.vendu_vitrine = oui;
+        P.toast(oui ? 'Affiché dans le catalogue, avec le bandeau « Vendu ».' : 'Retiré du catalogue.');
+      }).catch(function (err) { c.checked = !oui; signaler(err); })
+        .then(function () { c.disabled = false; });
+    });
+    var stop = function (e) { e.stopPropagation(); };
+    return h('label', { class: 'g-bascule g-bascule--petite', onclick: stop, onkeydown: stop }, c, 'Dans le catalogue');
+  }
+
   function vueAnnonces(page) {
     var btn = bouton('Déposer une annonce', 'btn--solid', 'plus', function () { deposerAnnonce(btn); });
     page.appendChild(entete('Annonces', 'Toutes les annonces de l\'espace transaction, en ligne ou en préparation.', [btn]));
@@ -356,6 +373,11 @@
             toutes.length ? null : bouton('Déposer une annonce', 'btn--solid', 'plus', function (e) { deposerAnnonce(e.currentTarget); }))));
           return;
         }
+        if (ongletAnnonces === 'vendue') {
+          liste.appendChild(h('p', { class: 'g-aide-liste' }, P.icone('info'),
+            'Cochez « Dans le catalogue » pour montrer un bien vendu dans le fil des annonces, avec le bandeau « Vendu ». '
+            + 'Les informations affichées se choisissent dans l\'annonce.'));
+        }
         var conteneur = h('div', { class: 'g-liste' });
         choix.forEach(function (a) {
           var st = libelleStatut(a);
@@ -374,6 +396,7 @@
             h('span', { class: 'g-ligne__titre' + (a.titre ? '' : ' sans-titre') }, a.titre || 'Annonce sans titre'),
             h('div', { class: 'g-ligne__meta' }, meta)),
           h('div', { class: 'g-ligne__droite' },
+            a.statut === 'vendue' && !a.en_corbeille ? caseCatalogue(a) : null,
             a.prix_fai ? h('span', { class: 'g-ligne__prix' }, P.prix(a.prix_fai)) : null,
             badgeStatut(st[0], st[1]))));
         });
@@ -1568,8 +1591,32 @@
         P.toast('Phrase ajoutée à la fin de la description : relisez-la.');
       } }, P.icone('crayon'), 'Écrire la phrase des atouts');
 
+      // Bien vendu : le montrer ou non dans le catalogue (bandeau « Vendu »), et avec quelles informations.
+      var carteVendu = (function () {
+        if (a.statut !== 'vendue') return null;
+        var choix = R.affichageVenduDe(a.vendu_affichage);
+        var options = h('div', { class: 'g-vendu__options' });
+        R.affichageVendu.forEach(function (x) {
+          var c = h('input', { type: 'checkbox' });
+          c.checked = choix[x[0]];
+          c.addEventListener('change', function () { choix[x[0]] = c.checked; changer('vendu_affichage', Object.assign({}, choix)); });
+          options.appendChild(h('label', { class: 'g-bascule g-bascule--petite' }, c, x[1]));
+        });
+        var blocOptions = h('div', { class: 'g-champ' }, h('span', { class: 'g-label' }, 'Informations affichées avec la photo'), options,
+          h('small', null, 'La photo principale, le type de bien, le titre et le bandeau « Vendu » sont toujours affichés. Pensez à enregistrer.'));
+        var montrer = h('input', { type: 'checkbox' });
+        montrer.checked = Boolean(a.vendu_vitrine);
+        blocOptions.hidden = !montrer.checked;
+        montrer.addEventListener('change', function () { changer('vendu_vitrine', montrer.checked); blocOptions.hidden = !montrer.checked; });
+        return h('section', { class: 'g-carte g-vendu' },
+          h('h2', null, 'Bien vendu : affichage dans le catalogue'),
+          zone('vendu_vitrine', h('label', { class: 'g-bascule' }, montrer, 'Montrer ce bien dans le fil des annonces, avec le bandeau « Vendu »')),
+          zone('vendu_affichage', blocOptions));
+      })();
+
       var editeurEl = h('div', { class: 'g-editeur' },
         zoneManquants,
+        carteVendu,
         section(1, 'Photos', 'Glissez les photos pour changer leur ordre. La première est la photo principale.', [depot, entreeFichiers, grillePhotos], 'photos'),
         section(2, 'L\'essentiel', null, [
           h('div', { class: 'g-champ', 'data-champ': 'type_bien' }, h('span', { class: 'g-label' }, 'Type de bien'), typeGroupe),
