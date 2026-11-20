@@ -1,0 +1,35 @@
+[
+  {
+    "reference_interne": "PETRA-IMMO F201",
+    "titre": "Arsenal Royal · Grand T3 de plain-pied de 127 m²",
+    "surface_habitable": 126.54,
+    "nb_pieces": 3,
+    "nb_chambres": 2,
+    "etage": 2,
+    "nb_niveaux": 1,
+    "description": "Dans l'écrin restauré de l'Arsenal Royal, monument du XVIIe siècle, le Bâtiment F compte plusieurs appartements, dont trois T3 assortis d'un stationnement privatif en parking souterrain sécurisé. Parquet, belles hauteurs, mobilier soigné et lumière généreuse y unissent le caractère de la pierre ancienne au confort d'une rénovation d'exception.\n\nUn vaste T3 de plain-pied, exceptionnellement lumineux. Le séjour s'ouvre sur un coin repas, les deux chambres offrent calme et raffinement, dont une habillée d'une élégante tête de lit vert émeraude. Depuis les fenêtres, la vue plonge sur la cour de l'Arsenal Royal.\n\nAvec son stationnement privatif dans le parking souterrain sécurisé de la Résidence.",
+    "photos": ["f201-1", "f201-2", "f201-3", "f201-4", "f201-5", "f201-6", "f201-7"]
+  },
+  {
+    "reference_interne": "PETRA-IMMO F301",
+    "titre": "Arsenal Royal · T3 duplex sous les toits",
+    "surface_habitable": 84.40,
+    "nb_pieces": 3,
+    "nb_chambres": 2,
+    "etage": 3,
+    "nb_niveaux": 2,
+    "description": "Dans l'écrin restauré de l'Arsenal Royal, monument du XVIIe siècle, le Bâtiment F compte plusieurs appartements, dont trois T3 assortis d'un stationnement privatif en parking souterrain sécurisé. Parquet, belles hauteurs, mobilier soigné et lumière généreuse y unissent le caractère de la pierre ancienne au confort d'une rénovation d'exception.\n\nUn T3 en duplex plein de caractère, niché sous les toits de l'Arsenal Royal. Salon lumineux, coin repas ouvert sur la cuisine, deux chambres et salle de bains. Depuis les fenêtres, la vue s'ouvre sur les toits de la Résidence.\n\nAvec son stationnement privatif dans le parking souterrain sécurisé de la Résidence.",
+    "photos": ["f301-1", "f301-2", "f301-3", "f301-4", "f301-5", "f301-6"]
+  },
+  {
+    "reference_interne": "PETRA-IMMO F103",
+    "titre": "Arsenal Royal · T3 chaleureux de 80 m²",
+    "surface_habitable": 79.53,
+    "nb_pieces": 3,
+    "nb_chambres": null,
+    "etage": 1,
+    "nb_niveaux": 1,
+    "description": "Dans l'écrin restauré de l'Arsenal Royal, monument du XVIIe siècle, le Bâtiment F compte plusieurs appartements, dont trois T3 assortis d'un stationnement privatif en parking souterrain sécurisé. Parquet, belles hauteurs, mobilier soigné et lumière généreuse y unissent le caractère de la pierre ancienne au confort d'une rénovation d'exception.\n\nUn T3 de plain-pied à l'atmosphère chaleureuse. Le séjour s'ouvre sur une cuisine équipée et un coin repas convivial, la chambre offre calme et confort, et la salle de bains complète l'ensemble. Un appartement lumineux, prêt à vivre.\n\nAvec son stationnement privatif dans le parking souterrain sécurisé de la Résidence.",
+    "photos": ["f103-1", "f103-2", "f103-3", "f103-4", "f103-5"]
+  }
+]
