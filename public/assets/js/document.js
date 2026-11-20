@@ -308,7 +308,7 @@
           h('p', { class: 'ft-contact__coord' }, joindre([D.contact.tel, D.contact.email], ' · ')))),
       h('div', { class: 'f-mentions' },
         a.mention_georisques ? h('p', null, 'Les informations sur les risques auxquels ce bien est exposé sont disponibles sur le site Géorisques : www.georisques.gouv.fr.') : null,
-        h('p', null, 'Honoraires : barème consultable sur petragest.com. Document d\'information non contractuel, établi le ' + dateLongue(aujourdhui())
+        h('p', null, 'Honoraires : barème consultable sur petragest.fr. Document d\'information non contractuel, établi le ' + dateLongue(aujourdhui())
           + ' d\'après les éléments connus à cette date. Photos non contractuelles.')),
       pied(),
     ];
